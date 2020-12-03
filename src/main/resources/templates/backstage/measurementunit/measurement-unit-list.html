@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-L-admin1.0</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/lib/layui/lay/modules/laypage.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="/js/template/html5shiv.r29.html5.min.js"></script>
+    <script src="/js/template/respond-1.4.2.min.js"></script>
+    <![endif]-->
+</head>
+
+<body class="layui-anim layui-anim-up">
+<div class="x-nav">
+    <a class="layui-btn layui-btn-primary layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right"
+       href="javascript:location.replace(location.href);" title="刷新">
+        <i class="layui-icon" style="line-height:38px">ဂ</i></a>
+</div>
+<div class="x-body">
+    <div class="layui-row">
+        <form class="layui-form layui-col-md12 x-so" id="backstage-user-form">
+            <input type="hidden" name="pageSize" th:value="${page.pageSize}"/>
+            <input type="hidden" name="currentPage"/>
+            <input type="text" name="name" placeholder="请输入单位名称" autocomplete="off" class="layui-input" th:value="${name}">
+            <button class="layui-btn" lay-submit="" lay-filter="sreach"><i class="layui-icon">&#xe615;</i></button>
+        </form>
+    </div>
+    <xblock>
+        <button class="layui-btn" onclick="x_admin_show('添加单位','/backstage/measurementUnit/info', 1200, 700)"><i class="layui-icon"></i>添加单位</button>
+    </xblock>
+    <table class="layui-table" lay-filter="akagi">
+        <thead>
+        <tr>
+            <th>
+                <div class="layui-unselect header layui-form-checkbox" lay-skin="primary"><i class="layui-icon">&#xe605;</i></div>
+            </th>
+            <th style="text-align: center">组名</th>
+            <th style="text-align: center">名称</th>
+            <th style="text-align: center">单位类型</th>
+            <th style="text-align: center">主功能码</th>
+            <th style="text-align: center">子功能码</th>
+            <th style="text-align: center">描述</th>
+            <th style="text-align: center">状态</th>
+            <th style="text-align: center">操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="measurementUnit, iterstart : ${measurementUnits}">
+            <td style="width: 4%">
+                <div class="layui-unselect layui-form-checkbox" lay-skin="primary" data-id='2'><i class="layui-icon">&#xe605;</i></div>
+            </td>
+            <!--/*@thymesVar id="measurementUnit" type="com.yingda.lkj.beans.entity.backstage.measurement.MeasurementUnit"*/-->
+            <td th:text="${measurementUnit.groupName}">组名</td>
+            <td th:text="${measurementUnit.name}">名称</td>
+            <!-- 单位类型 -->
+            <div>
+                <td th:if="${measurementUnit.valueType == 0}">数值</td>
+                <td th:if="${measurementUnit.valueType == 1}">字符</td>
+                <td th:if="${measurementUnit.valueType == 2}">图片</td>
+                <td th:if="${measurementUnit.valueType == 3}">视频</td>
+                <td th:if="${measurementUnit.valueType == 4}">音频</td>
+            </div>
+            <td th:text="${measurementUnit.mainFunctionCode}">主功能码</td>
+            <td th:text="${measurementUnit.subFunctionCode}">子功能码</td>
+            <td th:text="${measurementUnit.description}">描述</td>
+            <div>
+                <th th:if="${measurementUnit.hide == 0}">显示</th>
+                <th th:if="${measurementUnit.hide == 1}"><span style="color:red">隐藏</span></th>
+            </div>
+            <td class="td-manage">
+                <a title="编辑" th:data-id="${measurementUnit.id}" class="layui-btn layui-btn-sm layui-btn-normal"
+                   onclick="x_admin_show(
+                       '编辑','/backstage/measurementUnit/info?id=' + this.getAttribute('data-id') , 1200, 700)"
+                   href="javascript:;">
+                    编辑
+                </a>
+                <a title="编辑" th:data-id="${measurementUnit.id}" class="layui-btn layui-btn-sm layui-btn-normal"
+                   onclick="deleteUnit(this.getAttribute('data-id'))"
+                   href="javascript:;">
+                    删除
+                </a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <div th:include="/common/page::page('backstage-user-form')"></div>
+
+</div>
+<script th:inline="javascript">
+
+    /*用户-停用*/
+    function member_stop(obj, id) {
+        layer.confirm('确认要停用吗？', function (index) {
+
+            if ($(obj).attr('title') == '启用') {
+
+                //发异步把用户状态进行更改
+                $(obj).attr('title', '停用')
+                $(obj).find('i').html('&#xe62f;');
+
+                $(obj).parents("tr").find(".td-status").find('span').addClass('layui-btn-disabled').html('已停用');
+                layer.msg('已停用!', {icon: 5, time: 1000});
+
+            } else {
+                $(obj).attr('title', '启用')
+                $(obj).find('i').html('&#xe601;');
+
+                $(obj).parents("tr").find(".td-status").find('span').removeClass('layui-btn-disabled').html('已启用');
+                layer.msg('已启用!', {icon: 5, time: 1000});
+            }
+
+        });
+    }
+
+    /*用户-删除*/
+    function member_del(obj, id) {
+        layer.confirm('确认要删除吗？', function (index) {
+            //发异步删除数据
+            $(obj).parents("tr").remove();
+            layer.msg('已删除!', {icon: 1, time: 1000});
+        });
+    }
+
+
+    function delAll(argument) {
+
+        var data = tableCheck.getData();
+
+        layer.confirm('确认要删除吗？' + data, function (index) {
+            //捉到所有被选中的，发异步进行删除
+            layer.msg('删除成功', {icon: 1});
+            $(".layui-form-checked").not('.header').parents('tr').remove();
+        });
+    }
+
+    function merge(res) {
+
+        var data = res.data;
+        var mergeIndex = 0;//定位需要添加合并属性的行数
+        var mark = 1; //这里涉及到简单的运算，mark是计算每次需要合并的格子数
+        var columsName = ['id', 'name'];//需要合并的列名称
+        var columsIndex = [0, 1];//需要合并的列索引值
+
+        for (var k = 0; k < columsName.length; k++) { //这里循环所有要合并的列
+            var trArr = $(".layui-table-body>.layui-table").find("tr");//所有行
+            for (var i = 1; i < res.data.length; i++) { //这里循环表格当前的数据
+                var tdCurArr = trArr.eq(i).find("td").eq(columsIndex[k]);//获取当前行的当前列
+                var tdPreArr = trArr.eq(mergeIndex).find("td").eq(columsIndex[k]);//获取相同列的第一列
+
+                if (data[i][columsName[k]] === data[i - 1][columsName[k]]) { //后一行的值与前一行的值做比较，相同就需要合并
+                    mark += 1;
+                    tdPreArr.each(function () {//相同列的第一列增加rowspan属性
+                        $(this).attr("rowspan", mark);
+                    });
+                    tdCurArr.each(function () {//当前行隐藏
+                        $(this).css("display", "none");
+                    });
+                } else {
+                    mergeIndex = i;
+                    mark = 1;//一旦前后两行的值不一样了，那么需要合并的格子数mark就需要重新计算
+                }
+            }
+            mergeIndex = 0;
+            mark = 1;
+        }
+    }
+
+    function deleteUnit(id) {
+        layer.confirm('确认要删除吗？', function (index) {
+
+            $.ajax({
+                url: '/backstage/measurementUnit/delete/' + id,
+                type: 'post',
+                dataType: 'json',
+                success: function (result) {
+                    console.log(result);
+                    if (!result.success) {
+                        alert(result.msg);
+                        return false;
+                    }
+
+                    layer.alert("提交成功", {icon: 6}, function () {
+                        location.reload();
+                    });
+                }
+            });
+            layer.msg('已删除!', {icon: 1, time: 1000});
+        });
+
+    }
+</script>
+</body>
+
+</html>

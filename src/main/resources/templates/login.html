@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETMS V1.0</title>
+    <link rel="stylesheet" type="text/css" href="/css/login.css">
+</head>
+<body style="background: url('/images/pic/logo-yd.png')80px 30px no-repeat,
+        url('/images/pic/login-page-background.png') 0 120px no-repeat;" >
+<!--<body style="background: url('/images/pic/logo-crrc.png')80px 30px no-repeat,-->
+<!--        url('/images/pic/login-page-background.png') 0 120px no-repeat;" >-->
+<div style="position: absolute;top: 6%;right: 10%;letter-spacing:2px;font: 27px microsoft sans-serif;">
+    5G智能运维管理系统&nbsp;&nbsp;V1.0
+</div>
+<div id="wrapper" class="login-page" style="margin: 0 32% 0 68%">
+    <div id="login_form" class="form" style="border-radius: 2px;">
+        <form class="register-form">
+            <input type="text" placeholder="用户名" value="admin" id="r_user_name"/>
+            <input type="password" placeholder="密码" id="r_password"/>
+            <input type="text" placeholder="电子邮件" id="r_emial"/>
+            <button id="create">创建账户</button>
+            <p class="message">已经有了一个账户? <a href="#">立刻登录</a></p>
+        </form>
+        <form class="login-form" id="login-form-value">
+            <h2>系统登录</h2>
+            <input type="text" placeholder="用户名" name="username" value="admin" id="user_name"/>
+            <input type="password" placeholder="密码" name="password" id="password"/>
+            <button id="login">登  录</button>
+        </form>
+    </div>
+</div>
+<div style="margin: 230px 20% 0 40%;width: 40%;font:16px microsoft sans-serif;font-weight: 500;">
+    <div>
+        <a style="margin-right: 100px">产品介绍</a>
+        <a style="margin-right: 100px">操作手册</a>
+        <a style="margin-right: 100px">售后服务</a>
+    </div>
+    <div style="margin-top: 20px;letter-spacing:1.2px;">
+        CopyRight® 2018-2020 哈尔滨盈达科技有限公司
+    </div>
+</div>
+<input type="hidden" name="errorMsg" id="errorMsg" th:value="${errorMsg}"/>
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+<script src="/js/jquery.cookie.min.js"></script>
+<script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+<script type="text/javascript" src="/lib/layui/lay/modules/laypage.js" charset="utf-8"></script>
+<script type="text/javascript">
+    $(function() {
+        let errorMsg = $('#errorMsg').val();
+        if (errorMsg)
+            parent.location.href = '/auth/loginPage';
+    });
+
+    function check_login() {
+        //alert($('.login-form').serialize());
+        $.ajax({
+            url: '/auth/login',
+            type: 'post',
+            data: $('.login-form').serialize(),
+            dataType: 'json',
+            success: function (result) {
+                console.log(result);
+                if (!result.success) {
+                    if (result.errorCode === 5006)
+                        window.location.href = '/auth/cert?errorMsg=' + result.msg;
+                    else
+                        layui.use(['layer'],function () {
+                            layer.msg(result.msg, {icon: 5, time: 1000});
+                        });
+                    return false;
+                }
+
+                console.log(result.obj.token);
+                $.cookie('token', result.obj.token, { path: '/' });
+                location.href="/index";
+            }
+        })
+    }
+
+    function check_register() {
+        var name = $("#r_user_name").val();
+        var pass = $("#r_password").val();
+        var email = $("r_email").val();
+        if (name != "" && pass == "" && email != "") {
+            // alert("注册成功！");
+            $("#user_name").val("");
+            $("#password").val("");
+        } else {
+            $("#login_form").removeClass('shake_effect');
+            setTimeout(function () {
+                $("#login_form").addClass('shake_effect')
+            }, 1);
+        }
+    }
+
+    $(function () {
+        // 清除旧token
+        $.removeCookie('token',{ path: '/'});
+
+        $("#create").click(function () {
+            check_register();
+            return false;
+        })
+        $("#login").click(function () {
+            check_login();
+            return false;
+        })
+        $('.message a').click(function () {
+            $('form').animate({
+                height: 'toggle',
+                opacity: 'toggle'
+            }, 'slow');
+        });
+    })
+</script>
+</body>
+</html>

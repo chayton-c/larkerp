@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-L-admin1.0</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/lib/layui/lay/modules/laypage.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="/js/template/html5shiv.r29.html5.min.js"></script>
+    <script src="/js/template/respond-1.4.2.min.js"></script>
+    <![endif]-->
+    <style>
+        .grey {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+
+<body class="layui-anim layui-anim-up">
+<div class="x-body">
+    <table class="layui-table" lay-filter="akagi">
+        <thead>
+        <tr>
+            <!--            <th>电厂</th>-->
+            <!--            <th>局编号</th>-->
+            <th lay-data="{field:'2'}">线名</th>
+            <th lay-data="{field:'3'}">线编号</th>
+            <th lay-data="{field:'4'}">行别</th>
+            <th lay-data="{field:'5'}">区域</th>
+            <th lay-data="{field:'6'}">信号机编号</th>
+            <th lay-data="{field:'7'}">信号机位置(km)</th>
+            <th lay-data="{field:'distance', width:300}">信号机间距离(m)</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="semaphore, iterstart : ${semaphores}">
+            <!--            <td th:text="${semaphore.bureauName}" >电厂</td>-->
+            <!--            <td th:text="${semaphore.bureauCode}" >局编号</td>-->
+            <td th:text="${semaphore.railwayLineName}">线名</td>
+            <td th:text="${semaphore.railwayLineCode}">线编号</td>
+            <td th:text="${semaphore.downriver}">行别</td>
+            <td th:text="${semaphore.stationName}">区域</td>
+            <td th:text="${semaphore.code}">信号机编号</td>
+            <td th:text="${semaphore.position}">信号机位置(km)</td>
+
+            <td>
+                <div th:each="distance, iterstart : ${semaphore.distanceStyle}">
+                    <div th:style="iterstart.size >= '6' ? 'height:39px' : 'height:40px'">
+<!--                        <div th:style="${(iterstart.index + 1) == iterstart.size ? 'display:none' : ''}" th:text="${distance}">距离</div>-->
+
+                        <div class="layui-input-inline"
+                             th:style="${(iterstart.index + 1) == iterstart.size ? 'display:none' : ''}"
+                             th:text="${distance}" id="oneOrtwoOnclick"
+                        >距离
+                        </div>
+                        <button th:data-lkjDataLineId="${semaphore.lkjDataLineIds[iterstart.index]}"
+                                onclick="getHistory(this.getAttribute('data-lkjDataLineId'))"
+                                style="height: 30px;line-height: 30px;padding: 0 10px;margin-left: 10px;position:absolute;right: 100px"
+                                class="layui-btn">历史记录</button>
+                        <button th:data-lkjDataLineId="${semaphore.lkjDataLineIds[iterstart.index]}"
+                                onclick="getMeasuringPath(this.getAttribute('data-lkjDataLineId'))"
+                                style="height: 30px;line-height: 30px;padding: 0 10px;background-color: #42b8f1;position:absolute;right: 20px"
+                                class="layui-btn">测量路径</button>
+
+                        <!-- 最后一个不画分割线 -->
+                        <hr th:if="${(iterstart.index + 2) < iterstart.size}" class="layui-bg-gray" style="position: relative; bottom: 3px;">
+                    </div>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+<!--    <div th:include="/common/page::page('backstage-lkj-form')"></div>-->
+
+</div>
+<script th:inline="javascript">
+    const table = layui.table;
+
+    $(function () {
+
+        layui.use(['upload', 'table'], function () {
+            var $ = layui.jquery
+                , upload = layui.upload;
+            const table = layui.table;
+
+            table.init('akagi', {
+                height: document.documentElement.clientHeight - 250,
+                page: false,
+                limit: 30000,
+                done: function (res, curr, count) {
+
+                    // 每组颜色不用
+                    let fixedNode = $(".layui-table-body")[0];
+                    let child = $(fixedNode).find("tr");
+                    let previousDistance = '';
+                    let index = 0;
+                    for (let i = 0; i < res.data.length; i++) {
+                        const currentDistance = res.data[i].distance;
+                        if (currentDistance !== previousDistance)
+                            index++;
+
+                        previousDistance = currentDistance;
+                        $(child[i]).css("background-color", index % 2 === 0 ?  "whilte" : "#f2f2f2");
+                        console.log()
+                    }
+
+
+
+                    layuiRowspan('distance', 1);
+                }
+            });
+
+            //指定允许上传的文件类型
+            upload.render({
+                elem: '#test3'
+                , url: '/backstage/lkj/import'
+                , accept: 'file' //普通文件
+                , done: function (res) {
+                    console.log(res)
+                }
+            });
+        });
+    });
+
+    function merge(res) {
+        var data = res.data;
+        var mergeIndex = 0;//定位需要添加合并属性的行数
+        var mark = 1; //这里涉及到简单的运算，mark是计算每次需要合并的格子数
+        var columsName = ['id', 'name'];//需要合并的列名称
+        var columsIndex = [0, 1];//需要合并的列索引值
+
+        for (var k = 0; k < columsName.length; k++) { //这里循环所有要合并的列
+            var trArr = $(".layui-table-body>.layui-table").find("tr");//所有行
+            for (var i = 1; i < res.data.length; i++) { //这里循环表格当前的数据
+                var tdCurArr = trArr.eq(i).find("td").eq(columsIndex[k]);//获取当前行的当前列
+                var tdPreArr = trArr.eq(mergeIndex).find("td").eq(columsIndex[k]);//获取相同列的第一列
+
+                if (data[i][columsName[k]] === data[i - 1][columsName[k]]) { //后一行的值与前一行的值做比较，相同就需要合并
+                    mark += 1;
+                    tdPreArr.each(function () {//相同列的第一列增加rowspan属性
+                        $(this).attr("rowspan", mark);
+                    });
+                    tdCurArr.each(function () {//当前行隐藏
+                        $(this).css("display", "none");
+                    });
+                } else {
+                    mergeIndex = i;
+                    mark = 1;//一旦前后两行的值不一样了，那么需要合并的格子数mark就需要重新计算
+                }
+            }
+            mergeIndex = 0;
+            mark = 1;
+        }
+    }
+
+
+    //合并数据表格行
+    function layuiRowspan(fieldNameTmp, index, flag) {
+        let fieldName = [];
+
+        if (typeof fieldNameTmp == "string")
+            fieldName.push(fieldNameTmp);
+        else
+            fieldName = fieldName.concat(fieldNameTmp);
+
+        for (let i = 0; i < fieldName.length; i++)
+            execRowspan(fieldName[i], index, flag);
+    }
+
+    function execRowspan(fieldName, index, flag) {
+        // 1为不冻结的情况，左侧列为冻结的情况
+        let fixedNode = index === 1 ? $(".layui-table-body")[index - 1] : (index === 3 ? $(".layui-table-fixed-r") : $(".layui-table-fixed-l"));
+        // 左侧导航栏不冻结的情况
+        let child = $(fixedNode).find("td");
+        let childFilterArr = [];
+        // 获取data-field属性为fieldName的td
+        for (let i = 0; i < child.length; i++)
+            if (child[i].getAttribute("data-field") === fieldName)
+                childFilterArr.push(child[i]);
+
+        // 获取td的个数和种类
+        let childFilterTextObj = {};
+        for (let i = 0; i < childFilterArr.length; i++) {
+            let childText = flag ? childFilterArr[i].innerHTML : childFilterArr[i].textContent;
+            if (childFilterTextObj[childText] === undefined) {
+                childFilterTextObj[childText] = 1;
+            } else {
+                let num = childFilterTextObj[childText];
+                childFilterTextObj[childText] = num * 1 + 1;
+            }
+        }
+        let canRowspan = true;
+        let maxNum;//以前列单元格为基础获取的最大合并数
+        let finalNextIndex;//获取其下第一个不合并单元格的index
+        let finalNextKey;//获取其下第一个不合并单元格的值
+        for (let i = 0; i < childFilterArr.length; i++) {
+            (maxNum > 9000 || !maxNum) && (maxNum = $(childFilterArr[i]).prev().attr("rowspan") && fieldName !== "8" ? $(childFilterArr[i]).prev().attr("rowspan") : 9999);
+            let key = flag ? childFilterArr[i].innerHTML : childFilterArr[i].textContent;//获取下一个单元格的值
+            let nextIndex = i + 1;
+            let tdNum = childFilterTextObj[key];
+            let curNum = maxNum < tdNum ? maxNum : tdNum;
+            if (canRowspan) {
+                for (let j = 1; j <= curNum && (i + j < childFilterArr.length);) {//循环获取最终合并数及finalNext的index和key
+                    finalNextKey = flag ? childFilterArr[i + j].innerHTML : childFilterArr[i + j].textContent;
+                    finalNextIndex = i + j;
+                    if ((key !== finalNextKey && curNum > 1) || maxNum === j) {
+                        canRowspan = true;
+                        curNum = j;
+                        break;
+                    }
+                    j++;
+                    if ((i + j) === childFilterArr.length) {
+                        finalNextKey = undefined;
+                        finalNextIndex = i + j;
+                        break;
+                    }
+                }
+                childFilterArr[i].setAttribute("rowspan", curNum);
+                if ($(childFilterArr[i]).find("div.rowspan").length > 0) { // 设置td内的div.rowspan高度适应合并后的高度
+                    $(childFilterArr[i]).find("div.rowspan").parent("div.layui-table-cell").addClass("rowspanParent");
+                    $(childFilterArr[i]).find("div.layui-table-cell")[0].style.height = curNum * 38 - 10 + "px";
+                }
+                canRowspan = false;
+            } else {
+                childFilterArr[i].style.display = "none";
+            }
+            if (--childFilterTextObj[key] === 0 | --maxNum === 0 | --curNum === 0 || (finalNextKey !== undefined && nextIndex === finalNextIndex)) {//||(finalNextKey!=undefined&&key!=finalNextKey)
+                canRowspan = true;
+            }
+            if (curNum === 1)
+                $(childFilterArr[i]).find("div.layui-table-cell")[0].style.height = 26 + "px";
+            if (curNum > 1)
+                $(childFilterArr[i]).find("div.layui-table-cell")[0].style.height = curNum * 39 + "px";
+
+        }
+    }
+
+    layui.use(['form', 'jquery'], function () {
+        const $ = layui.jquery
+            ,form = layui.form;
+
+    })
+
+
+    function getMeasuringPath(lkjDateLineId){
+        // alert("1");
+        x_admin_show('测量路径', '/backstage/lkjApproveUpdate/measuringPath?lkjDateLineId=' +lkjDateLineId, 1400, 700);
+    }
+
+    function getHistory(lkjId) {
+        // const lkjId = $(e).attr('data-lkj');
+
+        $.ajax({
+            url: '/backstage/lkjApproveUpdate/history/' + lkjId,
+            type: 'post',
+            dataType: 'json',
+            success: function (result) {
+                console.log(result);
+                if (!result.success) {
+                    alert(result.msg);
+                    return false;
+                }
+                const histories = result.obj;
+                let content = "";
+                for (let i = 0; i < histories.length; i++) {
+                    const history = histories[i];
+                    content += "<div>";
+                    content += "间距：<span>" + history.distance + "</span>&nbsp;&nbsp;&nbsp;&nbsp;";
+                    content += "提交人：<span>" + history.userName + "</span>&nbsp;&nbsp;&nbsp;&nbsp;";
+                    content += "提交时间：<span>" + history.addTime + "</span>&nbsp;&nbsp;&nbsp;&nbsp;";
+                    content += "</div>";
+                }
+                layer.open({
+                    area: '500px',
+                    content: content
+                })
+            }
+        })
+    }
+
+</script>
+</body>
+
+</html>

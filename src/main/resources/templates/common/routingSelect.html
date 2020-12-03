@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>未敢设想的道路</title>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/lib/layui/lay/modules/laypage.js" charset="utf-8"></script>
+</head>
+
+<body th:fragment="routingSelect()" >
+    <div class="layui-form-item" th:if="${routingUrl == '/backstage/approveData/infoPageRouting'}">
+        <label class="layui-form-label">数据类型</label>
+        <div class="layui-input-inline">
+            <select id="data-type-select" name="dataTypeId" lay-verify="required" lay-search="">
+                <option th:each="approveDataType, iterStat : ${approveDataTypes}"
+                        th:value="${approveDataType.dataTypeId}"
+                        th:selected="${approveDataType.dataTypeId == dataTypeId}"
+                        th:text="${approveDataType.dataTypeName}">
+                    数据类型
+                </option>
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-input-inline" th:if="${routingUrl == '/backstage/approveData/versionRouting'}">
+        <select id="data-type-select" name="dataTypeId" lay-verify="required" lay-search="">
+            <option th:each="approveDataType, iterStat : ${approveDataTypes}"
+                    th:value="${approveDataType.dataTypeId}"
+                    th:selected="${approveDataType.dataTypeId == dataTypeId}"
+                    th:text="${approveDataType.dataTypeName}">
+                数据类型
+            </option>
+        </select>
+    </div>
+    <script th:inline="javascript">
+        function changeDataType(e) {
+            const id = $(e).attr('id');
+            if (id !== 'data-type-select')
+                return;
+
+            let href = [[${routingUrl}]] + '?dataTypeId=' + $(e).val();
+            window.location.replace(href)
+        }
+    </script>
+</body>
+
+</html>

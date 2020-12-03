@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-L-admin1.0</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/lib/layui/lay/modules/laypage.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="/js/template/html5shiv.r29.html5.min.js"></script>
+    <script src="/js/template/respond-1.4.2.min.js"></script>
+    <![endif]-->
+</head>
+
+<body class="layui-anim layui-anim-up">
+<div class="x-nav">
+    <a class="layui-btn layui-btn-primary layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right"
+       href="javascript:location.replace(location.href);" title="刷新">
+        <i class="layui-icon" style="line-height:38px">ဂ</i></a>
+</div>
+<div class="x-body">
+    <div class="layui-row">
+        <form class="layui-form layui-col-md12 x-so" id="backstage-user-form">
+            <input type="hidden" name="pageSize" th:value="${page.pageSize}"/>
+            <input type="hidden" name="currentPage"/>
+            <input type="hidden" id="deviceMaintenancePlanDeviceIds" name="deviceMaintenancePlanDeviceIds" th:value="${deviceMaintenancePlanDeviceIds}"/>
+        </form>
+    </div>
+    <xblock>
+        <button class="layui-btn" onclick="setMeasurementTemplates()"><i class="layui-icon"></i>添加</button>
+    </xblock>
+    <table class="layui-table" lay-filter="akagi">
+        <thead>
+        <tr>
+            <th>
+                <div class="layui-unselect header layui-form-checkbox" lay-skin="primary">
+                    <i class="layui-icon">&#xe605;</i>
+                </div>
+            </th>
+            <th>模板名称</th>
+            <th>描述</th>
+            <th>备注</th>
+            <th>修改时间</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="measurementTemplate, iterstart : ${measurementTemplates}">
+            <td>
+                <div class="layui-unselect layui-form-checkbox" lay-skin="primary"
+                     th:data-id='${measurementTemplate.id}'>
+                    <i class="layui-icon">&#xe605;</i>
+                </div>
+            </td>
+            <td th:text="${measurementTemplate.name}">模板名称</td>
+            <td th:text="${measurementTemplate.description}">描述</td>
+            <td th:text="${measurementTemplate.remark}">备注</td>
+            <td th:text="${#dates.format(measurementTemplate.updateTime,'yyyy-MM-dd')}">修改时间</td>
+        </tr>
+        </tbody>
+    </table>
+    <div th:include="/common/page::page('backstage-user-form')"></div>
+
+</div>
+<script th:inline="javascript">
+
+    function setMeasurementTemplates() {
+        const measurementTemplateId = tableCheck.getAttribute('id');
+        const deviceMaintenancePlanDeviceIds = $('#deviceMaintenancePlanDeviceIds').val();
+
+        console.log(deviceMaintenancePlanDeviceIds);
+        console.log(measurementTemplateId);
+        if (!measurementTemplateId || measurementTemplateId.length !== 1) {
+            layer.alert('请选择一个模板');
+            return;
+        }
+
+        $.ajax({
+            url: '/backstage/deviceMaintenancePlan/setMeasurementTemplates',
+            type: 'post',
+            data: {
+                'measurementTemplateId': measurementTemplateId.toString(),
+                'deviceMaintenancePlanDeviceIds': deviceMaintenancePlanDeviceIds
+            },
+            dataType: 'json',
+            success: function (result) {
+                console.log(result);
+                if (!result.success) {
+                    layer.alert(result.msg);
+                    return false;
+                }
+
+                layer.alert("增加成功", {icon: 6}, function () {
+                    // 获得frame索引
+                    const index = parent.layer.getFrameIndex(window.name);
+                    parent.location.reload();
+                    //关闭当前frame
+                    parent.layer.close(index);
+                });
+            }
+        });
+    }
+</script>
+</body>
+
+</html>

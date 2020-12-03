@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-L-admin1.0</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/lib/layui/lay/modules/laypage.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+</head>
+
+<body class="layui-anim layui-anim-up">
+<div class="x-nav">
+    <a class="layui-btn layui-btn-primary layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right"
+       href="javascript:location.replace(location.href);" title="刷新">
+        <i class="layui-icon" style="line-height:38px">ဂ</i></a>
+</div>
+<div class="x-body">
+    <table class="layui-table" lay-filter="layFilter">
+        <thead>
+        <tr>
+            <!--            <th>电厂</th>-->
+            <!--            <th>局编号</th>-->
+            <th lay-data="{field:'2', width:60}">线名</th>
+            <th lay-data="{field:'3', width:120}">区间</th>
+            <th lay-data="{field:'4', width:60}">方向</th>
+            <th lay-data="{field:'5', width:60}">行别</th>
+            <th lay-data="{field:'6', width:120}">区域</th>
+            <th lay-data="{field:'7', width:120}">起点信号机</th>
+            <th lay-data="{field:'8', width:120}">区域</th>
+            <th lay-data="{field:'9', width:120}">终点信号机</th>
+            <th lay-data="{field:'10', width:120}">信号机间距离(m)</th>
+            <th lay-data="{field:'lkjGroupName', width:200}">分组</th>
+            <th lay-data="{field:'11', width:120}">操作</th>
+            <th lay-data="{field:'12', width:120}">原距离</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="lkjDataLine, iterstart : ${lkjDataLines}">
+            <td th:text="${lkjDataLine.leftSemaphore.railwayLineName}">线名</td>
+            <td th:text="${lkjDataLine.leftSemaphore.fragmentName}">区间名</td>
+            <td th:text="${lkjDataLine.leftSemaphore.retrograde}">方向</td>
+            <td th:text="${lkjDataLine.leftSemaphore.downriver}">行别</td>
+            <td th:text="${lkjDataLine.leftSemaphore.stationName}">区域</td>
+            <td th:text="${lkjDataLine.leftSemaphore.code}">信号机编号</td>
+            <td th:text="${lkjDataLine.rightSemaphore.stationName}">区域</td>
+            <td th:text="${lkjDataLine.rightSemaphore.code}">信号机编号</td>
+            <td th:text="${#numbers.formatDecimal(lkjDataLine.distance,2,2)}">信号机间距离</td>
+            <td th:text="${lkjDataLine.lkjGroupName}">分组</td>
+            <td th:text="${lkjDataLine.operation}">操作</td>
+            <td th:text="${lkjDataLine.previousDistance}">原距离</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<script th:inline="javascript">
+    const table = layui.table;
+
+    layui.use(['form'], function () {
+        const form = layui.form;
+
+        // 联动选择
+        form.on('select()', function (data) {
+            fragmentLinkage(data.elem);
+        });
+
+        form.on('submit(exportLkj)', function (data) {
+            const params = data.field;
+
+            let railwayLineId = params.railwayLineId;
+            let fragmentId = params.fragmentId;
+            let retrograde = params.retrograde;
+            let downriver = params.downriver;
+
+            // if (!fragmentId) {
+            //     layer.msg("请选择区间进行导出");
+            //     return false;
+            // }
+
+            window.location.href = '/backstage/lkj/export?railwayLineId=' + railwayLineId + '&fragmentId=' + fragmentId
+                + '&downriver=' + downriver + '&retrograde=' + retrograde;
+        });
+    });
+
+    $(function () {
+        layui.use(['upload', 'table'], function () {
+            const $ = layui.jquery
+                , upload = layui.upload;
+            const table = layui.table;
+
+            table.init('layFilter', {
+                height: document.documentElement.clientHeight - 250,
+                page: false,
+                limit: 30000,
+                height: 800,
+                width: 1400,
+                done: function (res, curr, count) {
+                    // 每组颜色不同
+                    let fixedNode = $(".layui-table-body")[0];
+                    let child = $(fixedNode).find("tr");
+                    let previousDistance = '';
+                    let index = 1;
+                    for (let i = 0; i < res.data.length; i++) {
+                        const currentDistance = res.data[i].lkjGroupName;
+                        if (currentDistance !== previousDistance)
+                            index++;
+
+                        previousDistance = currentDistance;
+                        $(child[i]).css("background-color", index % 2 === 0 ? "#f2f2f2" : "white");
+                    }
+                }
+            });
+
+            //指定允许上传的文件类型
+            upload.render({
+                elem: '#test3'
+                , url: '/backstage/lkj/import'
+                , accept: 'file' //普通文件
+                , done: function (res) {
+                    console.log(res)
+                }
+            });
+        });
+    });
+
+    /*用户-停用*/
+    function member_stop(obj, id) {
+        layer.confirm('确认要停用吗？', function (index) {
+
+            if ($(obj).attr('title') == '启用') {
+
+                //发异步把用户状态进行更改
+                $(obj).attr('title', '停用')
+                $(obj).find('i').html('&#xe62f;');
+
+                $(obj).parents("tr").find(".td-status").find('span').addClass('layui-btn-disabled').html('已停用');
+                layer.msg('已停用!', {icon: 5, time: 1000});
+
+            } else {
+                $(obj).attr('title', '启用')
+                $(obj).find('i').html('&#xe601;');
+
+                $(obj).parents("tr").find(".td-status").find('span').removeClass('layui-btn-disabled').html('已启用');
+                layer.msg('已启用!', {icon: 5, time: 1000});
+            }
+
+        });
+    }
+
+    /*用户-删除*/
+    function member_del(obj, id) {
+        layer.confirm('确认要删除吗？', function (index) {
+            //发异步删除数据
+            $(obj).parents("tr").remove();
+            layer.msg('已删除!', {icon: 1, time: 1000});
+        });
+    }
+
+
+    function delAll(argument) {
+        var data = tableCheck.getData();
+
+        layer.confirm('确认要删除吗？' + data, function (index) {
+            //捉到所有被选中的，发异步进行删除
+            layer.msg('删除成功', {icon: 1});
+            $(".layui-form-checked").not('.header').parents('tr').remove();
+        });
+    }
+
+    function fragmentLinkage(e) {
+        const id = $(e).attr('id');
+        if (id !== 'railway-line-select')
+            return;
+
+        const railwayLineId = $(e).val();
+        $('#fragment-id').html('<option value="">直接选择或搜索选择</option>');
+
+        layui.form.render("select");//重新渲染 固定写法
+
+        if (!railwayLineId)
+            return;
+
+        $.ajax({
+            url: '/client/railwayLine/getFragments',
+            type: 'post',
+            data: 'railwayLineId=' + railwayLineId,
+            dataType: 'json',
+            success: function (result) {
+                if (!result.success) {
+                    alert(result.msg);
+                    return false;
+                }
+
+                $.each(result.obj, function (i, val) {
+                    $('#fragment-id').append('<option value="' + val.id + '">' + val.name + '</option>')
+                });
+
+                layui.form.render("select");//重新渲染 固定写法
+            }
+        });
+    }
+
+    function updateLkjDataLineTask(e) {
+        const baseLkjDataLineId = $(e).attr('data-id');
+        const lkjTaskId = $(e).attr('data-lkjTaskId');
+
+        $.ajax({
+            url: '/backstage/lkjTaskCustom/updateLkjDataLineTask',
+            type: 'post',
+            data: {
+                baseLkjDataLineId : baseLkjDataLineId,
+                lkjTaskId : lkjTaskId
+            },
+            dataType: 'json',
+            success: function (result) {
+                if (!result.success) {
+                    alert(result.msg);
+                    return false;
+                }
+
+                location.replace(location.href);
+            }
+        });
+    }
+</script>
+</body>
+
+</html>

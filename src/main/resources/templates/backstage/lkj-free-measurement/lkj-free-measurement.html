@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-L-admin1.0</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/lib/layui/lay/modules/laypage.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="/js/template/html5shiv.r29.html5.min.js"></script>
+    <script src="/js/template/respond-1.4.2.min.js"></script>
+    <![endif]-->
+</head>
+
+<body class="layui-anim layui-anim-up">
+<div class="x-nav">
+    <a class="layui-btn layui-btn-primary layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right"
+       href="javascript:location.replace(location.href);" title="刷新">
+        <i class="layui-icon" style="line-height:38px">ဂ</i></a>
+</div>
+<div class="x-body">
+    <div class="layui-row">
+        <form class="layui-form layui-col-md12 x-so" id="backstage-user-form">
+            <input type="hidden" name="pageSize" th:value="${page.pageSize}"/>
+            <input type="hidden" name="currentPage"/>
+            <input type="text" name="executeUserName" placeholder="请输入执行人" autocomplete="off" class="layui-input" th:value="${executeUserName}">
+            <input type="text" name="pointNames" placeholder="请输入路径" autocomplete="off" class="layui-input" th:value="${pointNames}">
+            <button class="layui-btn" lay-submit="" lay-filter="sreach"><i class="layui-icon">&#xe615;</i></button>
+        </form>
+    </div>
+    <table class="layui-table" lay-filter="akagi">
+        <thead>
+        <tr>
+            <th>
+                <div class="layui-unselect header layui-form-checkbox" lay-skin="primary"><i class="layui-icon">&#xe605;</i></div>
+            </th>
+            <th>执行人车间</th>
+            <th>执行人</th>
+            <th>距离</th>
+            <th>测量路径</th>
+            <th>测量时间</th>
+            <th>录入时间</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="lkjFreeMeasurement, iterstart : ${lkjFreeMeasurements}">
+            <td>
+                <div class="layui-unselect layui-form-checkbox" lay-skin="primary" data-id='2'><i class="layui-icon">&#xe605;</i></div>
+            </td>
+            <td th:text="${lkjFreeMeasurement.workshopName}" >执行人车间</td>
+            <td th:text="${lkjFreeMeasurement.executeUserName}" >执行人</td>
+            <td th:text="${lkjFreeMeasurement.distance}" >距离</td>
+            <td th:text="${lkjFreeMeasurement.pointNames}" >测量路径</td>
+            <td th:text="${lkjFreeMeasurement.measureTime}" >测量时间</td>
+            <td th:text="${lkjFreeMeasurement.addTime}">录入时间</td>
+            <td class="td-manage">
+                <a title="测量路径" th:data-id="${lkjFreeMeasurement.id}" class="layui-btn layui-btn-sm layui-btn-normal"
+                   onclick="x_admin_show('测量路径','/backstage/lkjFreeMeasurement/measuringPath?lkjFreeMeasurementId='
+                            + this.getAttribute('data-id') , 1400, 700)"
+                   href="javascript:;">
+                    测量路径
+                </a>
+                <a title="生成测量任务" class="layui-btn layui-btn-sm layui-btn-normal"
+                   onclick="x_admin_show('生成测量任务','/backstage/lkjTaskCustom/lkjDataLines', 1400, 700)"
+                   href="javascript:;">
+                    生成测量任务
+                </a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <div th:include="/common/page::page('backstage-user-form')"></div>
+
+</div>
+<script th:inline="javascript">
+
+    function merge(res) {
+
+        var data = res.data;
+        var mergeIndex = 0;//定位需要添加合并属性的行数
+        var mark = 1; //这里涉及到简单的运算，mark是计算每次需要合并的格子数
+        var columsName = ['id','name'];//需要合并的列名称
+        var columsIndex = [0,1];//需要合并的列索引值
+
+        for (var k = 0; k < columsName.length; k++) { //这里循环所有要合并的列
+            var trArr = $(".layui-table-body>.layui-table").find("tr");//所有行
+            for (var i = 1; i < res.data.length; i++) { //这里循环表格当前的数据
+                var tdCurArr = trArr.eq(i).find("td").eq(columsIndex[k]);//获取当前行的当前列
+                var tdPreArr = trArr.eq(mergeIndex).find("td").eq(columsIndex[k]);//获取相同列的第一列
+
+                if (data[i][columsName[k]] === data[i-1][columsName[k]]) { //后一行的值与前一行的值做比较，相同就需要合并
+                    mark += 1;
+                    tdPreArr.each(function () {//相同列的第一列增加rowspan属性
+                        $(this).attr("rowspan", mark);
+                    });
+                    tdCurArr.each(function () {//当前行隐藏
+                        $(this).css("display", "none");
+                    });
+                }else {
+                    mergeIndex = i;
+                    mark = 1;//一旦前后两行的值不一样了，那么需要合并的格子数mark就需要重新计算
+                }
+            }
+            mergeIndex = 0;
+            mark = 1;
+        }
+    }
+</script>
+</body>
+
+</html>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-L-admin1.0</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/lib/layui/lay/modules/laypage.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="/js/template/html5shiv.r29.html5.min.js"></script>
+    <script src="/js/template/respond-1.4.2.min.js"></script>
+    <![endif]-->
+</head>
+
+<body class="layui-anim layui-anim-up">
+<div class="x-nav">
+    <a class="layui-btn layui-btn-primary layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right"
+       href="javascript:location.replace(location.href);" title="刷新">
+        <i class="layui-icon" style="line-height:38px">ဂ</i></a>
+</div>
+<div class="x-body">
+    <div class="layui-row">
+        <form class="layui-form layui-col-md12 x-so" id="backstage-station-form">
+            <input type="hidden" name="pageSize" th:value="${page.pageSize}"/>
+            <input type="hidden" name="currentPage"/>
+            <div class="layui-input-inline">
+                <select name="railwayLineId" lay-search="">
+                    <option value="">选择或输入厂区</option>
+                    <option th:each="railwayLine, iterstart : ${railwayLines}" th:value="${railwayLine.id}" th:text="${railwayLine.name}"
+                            th:selected="${railwayLineId == railwayLine.id}">厂区名</option>
+                </select>
+            </div>
+            <div class="layui-input-inline">
+                <select name="workshopId" lay-search="">
+                    <option value="">选择或输入车间</option>
+                    <option th:each="workshop, iterstart : ${workshops}" th:value="${workshop.id}" th:text="${workshop.name}"
+                            th:selected="${params.workshopId == workshop.id}">类型名</option>
+                </select>
+            </div>
+
+            <input type="text" name="code" placeholder="请输入区域编码" autocomplete="off" class="layui-input" th:value="${params.code}">
+            <input type="text" name="name" placeholder="请输入区域名" autocomplete="off" class="layui-input" th:value="${params.name}">
+
+            <div class="layui-input-inline">
+                <select name="hideStr" lay-search="">
+                    <option value="">显示/隐藏</option>
+                    <option value="0" th:selected="${hideStr == '0'}">显示</option>
+                    <option value="1" th:selected="${hideStr == '1'}">隐藏</option>
+                </select>
+            </div>
+            <button class="layui-btn" lay-submit="" lay-filter="sreach"><i class="layui-icon">&#xe615;</i></button>
+            <div class="layui-btn" lay-submit lay-filter="exportStations">导出区域</div>
+        </form>
+    </div>
+    <xblock>
+        <button class="layui-btn" onclick="x_admin_show('添加区域','/backstage/station/addPage', 800, 600)"><i
+                class="layui-icon"></i>添加
+        </button>
+        <button type="button" class="layui-btn" id="import-stations"><i class="layui-icon"></i>导入区域</button>
+    </xblock>
+    <table class="layui-table" lay-filter="akagi">
+        <thead>
+        <tr>
+            <th>
+                <div class="layui-unselect header layui-form-checkbox" lay-skin="primary"><i
+                        class="layui-icon">&#xe605;</i></div>
+            </th>
+            <th>编码</th>
+            <th>名称</th>
+            <th>部门</th>
+            <th>所属车间</th>
+            <th>所属厂区</th>
+            <th>状态</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="station, iterstart : ${stations}">
+            <td>
+                <div class="layui-unselect layui-form-checkbox" lay-skin="primary" data-id='2'><i class="layui-icon">&#xe605;</i></div>
+            </td>
+            <td th:text="${station.code}" >编码</td>
+            <td th:text="${station.name}" >用户名</td>
+            <td th:text="${station.sectionName}" >部门</td>
+            <td th:text="${station.workshopName}" >车间</td>
+            <td th:text="${station.lineName}">所属厂区</td>
+            <div>
+                <td th:if="${station.hide == 0}">显示</td>
+                <td th:if="${station.hide == 1}">隐藏</td>
+            </div>
+            <td class="td-manage">
+                <a title="编辑" th:data-id="${station.id}" class="layui-btn layui-btn-sm layui-btn-normal"
+                   onclick="x_admin_show('编辑','/backstage/station/infoPage?id=' + this.getAttribute('data-id') , 800, 600)"
+                   href="javascript:;">
+                    编辑
+                </a>
+                <a title="关联厂区" th:data-id="${station.id}" class="layui-btn layui-btn-sm layui-btn-normal"
+                   onclick="x_admin_show('编辑','/backstage/line/stationLineList?stationId=' + this.getAttribute('data-id') , 1400, 750)"
+                   href="javascript:;">
+                    关联厂区
+                </a>
+                <a th:data-id="${station.id}"
+                        class="layui-btn-danger layui-btn layui-btn-xs"
+                        onclick="member_del(this)"
+                        href="javascript:;" >隐藏</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <div th:include="/common/page::page('backstage-station-form')"></div>
+
+</div>
+<script th:inline="javascript">
+
+    layui.use(['upload', 'layer'], function(){
+        const $ = layui.jquery
+            , upload = layui.upload
+            , layer = layui.layer;
+
+        //指定允许上传的文件类型
+        upload.render({
+            elem: '#import-stations'
+            ,url: '/backstage/station/importStations'
+            ,accept: 'file' //普通文件
+            ,done: function(res){
+                if (!res.isSuccess)
+                    layer.alert(res.msg);
+                $('#find').click();
+            }
+        });
+    });
+
+    /*用户-停用*/
+    function member_stop(obj, id) {
+        layer.confirm('确认要停用吗？', function (index) {
+
+            if ($(obj).attr('title') == '启用') {
+
+                //发异步把用户状态进行更改
+                $(obj).attr('title', '停用')
+                $(obj).find('i').html('&#xe62f;');
+
+                $(obj).parents("tr").find(".td-status").find('span').addClass('layui-btn-disabled').html('已停用');
+                layer.msg('已停用!', {icon: 5, time: 1000});
+
+            } else {
+                $(obj).attr('title', '启用')
+                $(obj).find('i').html('&#xe601;');
+
+                $(obj).parents("tr").find(".td-status").find('span').removeClass('layui-btn-disabled').html('已启用');
+                layer.msg('已启用!', {icon: 5, time: 1000});
+            }
+
+        });
+    }
+
+    function member_del(obj, id) {
+        layer.confirm('确认要隐藏吗？', function (index) {
+            //发异步删除数据
+
+            $.ajax({
+                url: '/backstage/station/delete',
+                type: 'get',
+                data: {
+                    ids: obj.getAttribute('data-id')
+                },
+                dataType: 'json',
+                success: function (result) {
+                    console.log(result);
+                    if (!result.success) {
+                        layer.alert(result.msg);
+                        return false;
+                    }
+
+                    layer.alert("操作成功", {icon: 6}, function () {
+                        location.reload();
+                    });
+                }
+            });
+        });
+    }
+
+    function delAll(argument) {
+        var data = tableCheck.getData();
+
+        layer.confirm('确认要删除吗？' + data, function (index) {
+
+            //捉到所有被选中的，发异步进行删除
+            layer.msg('删除成功', {icon: 1});
+            $(".layui-form-checked").not('.header').parents('tr').remove();
+        });
+    }
+    //导出区域
+    layui.use(['form'], function () {
+        const form = layui.form;
+
+        //导出测量结果
+        form.on('submit(exportStations)', function (data) {
+            console.log(data);
+            console.log(data.field);
+            console.log(JSON.stringify(data.field));
+
+            const params = data.field;
+
+            let workshopId = params.workshopId;
+            let code = params.code;
+            let name = params.name;
+            console.log(workshopId);
+            window.location.href = '/backstage/station/exportStations?workshopId=' + workshopId + '&code='+code + '&name=' + name;
+        });
+    });
+</script>
+</body>
+
+</html>

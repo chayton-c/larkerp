@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-L-admin1.0</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+    <script src="/js/util.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="/js/template/html5shiv.r29.html5.min.js"></script>
+    <script src="/js/template/respond-1.4.2.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+<div class="x-nav">
+    <a class="layui-btn layui-btn-primary layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right"
+       href="javascript:location.replace(location.href);" title="刷新">
+        <i class="layui-icon" style="line-height:38px">ဂ</i></a>
+</div>
+
+<div style='width:200px;float:left;height:810px;'>
+    <div id="lineTree"></div>
+</div>
+
+<div style='width:1px;border:1px solid ;float:left;height:830px;'><!--这个div模拟一条垂直分割线--></div>
+
+<div style='width:1458px;float:left;height:830px; margin-top: -10px; display: inline-block' id="showTable">
+    <table id="parentTable"></table>
+    <table id="childrenTable"></table>
+
+    <!--台账-->
+    <table id="deviceTable"></table>
+
+</div>
+
+
+<!-- 厂区 toolbar 模板 -->
+<script type="text/html" id="addLine">
+    <div class='layui-btn' style="height: 30px; line-height: 30px"
+         onclick="x_admin_show('添加厂区', '/backstage/line/railwayLineInfo', 800, 560)"><i class="layui-icon"></i>添加
+    </div>
+</script>
+
+
+<!-- 设备台账 toolbar 模板 -->
+<script type="text/html" id="deviceButton">
+    <div class='layui-btn' style="height: 30px; line-height: 30px" th:id="node.id"
+         onclick="x_admin_show('添加', '/backstage/device/addPage?deviceTypeId=' + this.getAttribute('device-type-id'), 1200, 800)"><i class="layui-icon"></i>添加
+    </div>
+
+    <div class='layui-btn' style="height: 30px; line-height: 30px" type="button" id="import-semaphores"><i class="layui-icon"></i>导入信号机
+    </div>
+
+    <div class='layui-btn' style="height: 30px; line-height: 30px" type="button" id="import-device"><i class="layui-icon"></i>导入设备
+    </div>
+
+    <div class='layui-btn' style="height: 30px; line-height: 30px" type="button" id="downloadQrcodes" onclick="downloadQrcodes()"><i class="layui-icon"></i>下载二维码
+    </div>
+
+    </div>
+
+</script>
+
+<div id="qrcode" style="display:none"></div>
+<a id="download" download="qrcode.jpg" style="display:none"></a>
+<button id="save" style="display:none">save</button>
+<script type="text/javascript" src="/js/qrcode/device-qrcode.js"></script>
+<script type="text/javascript" src="/js/zip/zip.js"></script>
+<script>
+    let pageDevice = [];
+
+    //初始化
+    $(function () {
+        $.ajax({
+            url: '/backstage/lineTree/nodeInfo',
+            dataType: 'json',
+            success: function (data) {
+                layui.use('tree', function () {
+                    layui.tree({
+                        elem: '#lineTree',
+                        nodes: convert(data),
+                        click: function (node) {
+                            const children = node.children; //当前节点下 节点信息
+                            nodeMethod(data, node, children);
+                        }
+                    });
+                });
+                // nodeMethod(data, node);
+            }
+        });
+    })
+
+
+    //厂区节点
+    function convert(data) {
+        let nodes = [];
+        const lineInfo = data.obj;
+        for (let i = 0; i < lineInfo.length; i++) {
+            const lineObj = lineInfo[i];
+            nodes.push({
+                id: lineObj.id,
+                name: lineObj.name + "(厂区)",
+                children: stationNode(lineObj),
+                level: 1
+            })
+        }
+        return nodes;
+    }
+
+    //区域节点
+    function stationNode(lineObj) {
+        const stationList = lineObj.stationList
+        const childrens = [];
+        if (stationList != null) {
+            for (let i = 0; i < stationList.length; i++) {
+                const stationObj = stationList[i];
+                childrens.push({
+                    id: stationObj.id,
+                    name: stationObj.name + "(区域)",
+                    children: deviceTypeNode(stationObj),
+                    level: 2
+                });
+            }
+        }
+        return childrens;
+    }
+
+    //设备类型节点
+    function deviceTypeNode(stationObj) {
+        const deviceTypeList = stationObj.deviceTypeList;
+        const stationId = stationObj.id;
+        const childrens = [];
+        if (deviceTypeList != null) {
+            for (let i = 0; i < deviceTypeList.length; i++) {
+                const deviceTypeObj = deviceTypeList[i];
+                childrens.push({
+                    id: deviceTypeObj.id,
+                    name: deviceTypeObj.name + "(设备类型)",
+                    stationId: stationId,
+                    level: 3
+                    // children: deviceNode(stationObj)
+                });
+            }
+
+        }
+        return childrens;
+    }
+
+    //操作节点信息
+    function nodeMethod(data, node, children) {
+        const nodeId = node.id; //当前节点id
+        const level = node.level;//当前节点level
+        const name = node.name;
+
+        layui.use(['table', 'form', 'upload'],function () {
+
+            let table = layui.table,
+                form = layui.form,
+                upload = layui.upload;
+
+            //展示厂区table
+            if (level === 1) {
+                table.render({
+                    elem: '#parentTable',
+                    url: '/backstage/lineTree/lineTable',
+                    height: 390,
+                    toolbar: "#addLine",
+                    cols: [
+                        [ //表头
+                            {
+                                field: 'name',
+                                title: '厂区名',
+                                width: 250,
+                                sort: true,
+                                fixed: 'left',
+                                templet: function (d) {
+                                    return d.name;
+                                }
+                            },
+                            {field: 'bureauName', title: '电厂', width: 250, edit: 'text'},
+                            {field: 'code', title: '编码', width: 148, sort: true},
+                            {field: 'typeInfo', title: '类型', width: 148, sort: true},
+
+                            {
+                                field: 'id',
+                                fixed: 'right',
+                                title: '操作',
+                                width: 415,
+                                align: 'center',
+                                templet: function (d) {
+                                    let id = d.id;
+                                    return "<div class='layui-btn layui-btn layui-btn-xs' data-id='" + id + "' " +
+                                        "onclick=\"x_admin_show('编辑', '/backstage/line/railwayLineInfo?id='+ this.getAttribute('data-id'), 800, 560)\" >" +
+                                        "<i class='layui-icon'>&#xe642;</i> 编辑 </div> "
+                                }
+                            }
+                        ]
+                    ],
+                    where: {
+                        nodeId: nodeId
+                    },
+                    page: true   //开启分页
+                    ,
+                    limit: 10   //默认十条数据一页
+                    ,
+                    limits: [10, 20, 30, 50]  //数据分页条
+                });
+
+                if (children != null){
+                    table.render({
+                        elem: '#childrenTable'
+                        , url: '/backstage/lineTree/stationChildrenTable'
+                        , height: 390
+                        , page: true   //开启分页
+                        , limit: 10   //默认十条数据一页
+                        , limits: [10, 20, 30, 50]  //数据分页条
+                        , where: {
+                            nodeId: nodeId,
+                            lineName: name
+                        }
+                        , cols: [
+                            [ //表头
+                                {
+                                    field: 'code',title: '编码',width: 250,sort: true,fixed: 'left',templet: function (d) {
+                                        return d.code;
+                                    }
+                                },
+                                {field: 'name', title: '名称', width: 250, edit: 'text'},
+                                {field: 'sectionName', title: '部门', width: 148, sort: true},
+                                {field: 'workshopName', title: '所属车间', width: 148, sort: true},
+                                {field: 'lineName', title: '所属厂区', width: 148, sort: true},
+                                {
+                                    field: 'hide', title: '状态', width: 100, templet: function (d) {
+                                        if (d.hide == 0) {
+                                            return "显示"
+                                        }
+                                        return "隐藏"
+                                    }
+                                },
+                                {
+                                    field: 'id',
+                                    fixed: 'right',
+                                    title: '操作',
+                                    width: 415,
+                                    align: 'center',
+                                    templet: function (d) {
+                                        let id = d.id;
+                                        return "<div class='layui-btn layui-btn layui-btn-xs' data-id='" + id + "' " +
+                                            "onclick=\"x_admin_show('编辑', '/backstage/station/infoPage?id='+ this.getAttribute('data-id'), 800, 600)\" >" +
+                                            "<i class='layui-icon'>&#xe642;</i> 编辑 </div> " +
+
+                                            "<div class='layui-btn layui-btn-warm layui-btn-xs' data-id='" + id + "' " +
+                                            "onclick=\"x_admin_show('编辑', '/backstage/line/stationLineList?stationId='+ this.getAttribute('data-id'), 1400, 750) \">" +
+                                            "<i class=\"layui-icon\">&#xe642;</i> 关联厂区 </div>" +
+
+                                            "<button data-id='" + id + "' data-has-slave ='" + d.hasSlave + "' onclick=\"member_del(this)\" href='javascript:;' class='layui-btn-danger layui-btn layui-btn-xs'><i class='layui-icon'>&#xe640;</i>隐藏</button> "
+                                    }
+                                }
+                            ]
+                        ],
+
+                    })
+                }
+            }
+
+            //展示区域table
+            if (level === 2) {
+                $('#deviceTable').next().hide();
+                table.render({
+                    elem: '#parentTable'
+                    , url: '/backstage/lineTree/stationTable'
+                    , height: 390
+                    , page: true   //开启分页
+                    , limit: 10   //默认十条数据一页
+                    , limits: [10, 20, 30, 50]  //数据分页条
+                    , where: {
+                        nodeId: nodeId
+                    }
+                    , cols: [
+                        [ //表头
+                            {
+                                field: 'code',title: '编码',width: 250,sort: true,fixed: 'left',templet: function (d) {
+                                    return d.code;
+                                }
+                            },
+                            {field: 'name', title: '名称', width: 250, edit: 'text'},
+                            {field: 'sectionName', title: '部门', width: 148, sort: true},
+                            {field: 'workshopName', title: '所属车间', width: 148, sort: true},
+                            {field: 'lineName', title: '所属厂区', width: 148, sort: true},
+                            {
+                                field: 'hide', title: '状态', width: 100, templet: function (d) {
+                                    if (d.hide == 0) {
+                                        return "显示"
+                                    }
+                                    return "隐藏"
+                                }
+                            },
+                            {
+                                field: 'id',
+                                fixed: 'right',
+                                title: '操作',
+                                width: 415,
+                                align: 'center',
+                                templet: function (d) {
+                                    let id = d.id;
+                                    return "<div class='layui-btn layui-btn layui-btn-xs' data-id='" + id + "' " +
+                                        "onclick=\"x_admin_show('编辑', '/backstage/station/infoPage?id='+ this.getAttribute('data-id'), 800, 600)\" >" +
+                                        "<i class='layui-icon'>&#xe642;</i> 编辑 </div> " +
+
+                                        "<div class='layui-btn layui-btn-warm layui-btn-xs' data-id='" + id + "' " +
+                                        "onclick=\"x_admin_show('编辑', '/backstage/line/stationLineList?stationId='+ this.getAttribute('data-id'), 1400, 750) \">" +
+                                        "<i class=\"layui-icon\">&#xe642;</i> 关联厂区 </div>" +
+
+                                        "<button data-id='" + id + "' data-has-slave ='" + d.hasSlave + "' onclick=\"member_del(this)\" href='javascript:;' class='layui-btn-danger layui-btn layui-btn-xs'><i class='layui-icon'>&#xe640;</i>隐藏</button> "
+                                }
+                            }
+                        ]
+                    ],
+
+                });
+
+                if (children != null) {
+                    table.render({
+                        elem: '#childrenTable'
+                        , url: '/backstage/lineTree/deviceTypeChildrenTable'
+                        , height: 390
+                        , page: true   //开启分页
+                        , limit: 10   //默认十条数据一页
+                        , limits: [10, 20, 30, 50]  //数据分页条
+                        , where: {
+                            nodeId: nodeId,
+                            lineName: name
+                        }
+                        , cols: [
+                            [ //表头
+                                {
+                                    field: 'name',title: '类型',width: 250,sort: true,fixed: 'left',templet: function (d) {
+                                        return d.name;
+                                    }
+                                },
+                                {field: 'addTime', title: '添加时间', width: 250, edit: 'text'},
+                                {
+                                    field: 'id',fixed: 'right',title: '操作',width: 600,align: 'center',
+                                    templet: function (d) {
+                                        let id = d.id;
+                                        return "<div class='layui-btn layui-btn layui-btn-xs' data-id='" + id + "' " +
+                                            "onclick=\"x_admin_show('编辑', '/backstage/deviceType/info?id='+ this.getAttribute('data-id'), 800, 600)\" >" +
+                                            "<i class='layui-icon'>&#xe642;</i> 编辑 </div> " +
+
+                                            "<div class='layui-btn layui-btn-warm layui-btn-xs' data-id='" + id + "' " +
+                                            "onclick=\"x_admin_show('扩展字段信息', '/backstage/deviceType/deviceExtendField?pageSize=5&deviceTypeId='+ this.getAttribute('data-id'), 1400, 750) \">" +
+                                            "<i class=\"layui-icon\">&#xe642;</i> 扩展字段信息 </div>" +
+
+                                            "<div class='layui-btn layui-btn-warm layui-btn-xs' data-id='" + id + "' " +
+                                            "onclick=\"x_admin_show('测量字段信息', '/backstage/deviceType/deviceMeasurementItem?pageSize=5&deviceTypeId='+ this.getAttribute('data-id'), 1400, 750) \">" +
+                                            "<i class=\"layui-icon\">&#xe642;</i> 测量字段信息 </div>" +
+
+                                            "<div class='layui-btn layui-btn-warm layui-btn-xs' data-id='" + id + "' " +
+                                            "onclick=\"x_admin_show('子类型信息', '/backstage/deviceType/deviceSubTypeInfo?pageSize=5&deviceTypeId='+ this.getAttribute('data-id'), 1400, 750) \">" +
+                                            "<i class=\"layui-icon\">&#xe642;</i> 子类型信息 </div>"
+
+                                    }
+                                }
+                            ]
+                        ],
+
+                    });
+                }
+            }
+
+            //点击 设备类型的时候 展示设备台账
+            if(level === 3) {
+                $('#parentTable').next().hide();
+                $('#childrenTable').next().hide();
+                table.render('#parentTable');
+                table.render({
+                    elem: '#deviceTable'
+                    , url: '/backstage/lineTree/deviceTable'
+                    , height: 810
+                    , toolbar: '#deviceButton'
+                    , page: true   //开启分页
+                    , limit: 20   //默认十条数据一页
+                    , limits: [10, 20, 30, 50]  //数据分页条
+                    , where: {
+                        stationId: node.stationId,
+                        deviceTypeId: node.id
+                    }
+                    , cols: [
+                        [ //表头
+                            {
+                                fixed: 'checkDevice', type: 'checkbox'},
+                            {
+                                field: 'railwayLineName',
+                                title: '所属厂区',
+                                width: 150,
+                                sort: true,
+                                fixed: 'left',
+                                templet: function (d) {
+                                    pageDevice.push(d);
+                                    return d.railwayLineName;
+                                }
+                            },
+                            {field: 'stationName', title: '区域', width: 150, edit: 'text'},
+                            {field: 'workshopName', title: '车间', width: 148, sort: true},
+                            {field: 'deviceTypeName', title: '设备类型', width: 148, sort: true},
+                            {field: 'deviceSubTypeName', title: '设备子类型', width: 148, sort: true},
+                            {field: 'name', title: '设备名', width: 148, sort: true},
+                            {field: 'code', title: '编码', width: 100, sort: true},
+                            {field: 'positionInfo', title: '位置信息', width: 148, sort: true},
+                            {
+                                field: 'hide', title: '状态', width: 80, templet: function (d) {
+                                    if (d.hide == 0) {
+                                        return "显示"
+                                    }
+                                    return "隐藏"
+                                }
+                            },
+                            {
+                                field: 'id', fixed: 'right', title: '操作', width: 150, align: 'center',
+                                templet: function (d) {
+                                    let id = d.id;
+                                    return "<div class='layui-btn layui-btn layui-btn-xs' data-id='" + id + "' " +
+                                        "onclick=\"x_admin_show('编辑', '/backstage/device/infoPage?id='+ this.getAttribute('data-id'), 1200, 800)\" >" +
+                                        "<i class='layui-icon'>&#xe642;</i> 编辑 </div> "
+                                }
+                            }
+                        ]
+                    ],
+                });
+            }
+
+            //隐藏函数
+            function member_del(obj, id) {
+                layer.confirm('确认要隐藏吗？', function (index) {
+                    //发异步删除数据
+
+                    $.ajax({
+                        url: '/backstage/station/delete',
+                        type: 'get',
+                        data: {
+                            ids: obj.getAttribute('data-id')
+                        },
+                        dataType: 'json',
+                        success: function (result) {
+                            if (!result.success) {
+                                layer.alert(result.msg);
+                                return false;
+                            }
+
+                            layer.alert("操作成功", {icon: 6}, function () {
+                                location.reload();
+                            });
+                        }
+                    });
+                });
+            }
+
+            //监听checkbox
+            form.on('checkbox(checkDevice)',function () {
+
+            });
+
+            //导入信号机
+            upload.render({
+                elem: '#import-semaphores'
+                , url: '/backstage/device/importSemaphore'
+                , accept: 'file' //普通文件
+                , done: function (res) {
+                    if (!res.isSuccess)
+                        layer.alert(res.msg);
+                    $('#find').click();
+                }
+            });
+
+            //导入设备
+            upload.render({
+                elem: '#import-device'
+                , url: '/backstage/device/importDevice'
+                , accept: 'file' //普通文件
+                , done: function (res) {
+                    if (!res.isSuccess)
+                        layer.alert(res.msg);
+                    $('#find').click();
+                }
+            });
+
+        });
+
+    }
+
+    // 下载二维码
+    function downloadQrcodes() {
+
+        // th:data-description="${device.railwayLineName + '-' + device.name}"
+        // th:data-id='${device.id}'>
+
+        let deviceIds = [];tableCheck.getAttribute('id');
+        let descriptions = [];tableCheck.getAttribute('description')
+        for (let i = 0; i < pageDevice.length; i++) {
+            let device = pageDevice[i];
+            deviceIds.push(device.id);
+            descriptions.push(device.railwayLineName + '-' + device.name);
+        }
+
+        const zip = new JSZip();
+        for (let i = 0; i < deviceIds.length; i++) {
+            let deviceId = deviceIds[i];
+            let description = descriptions[i];
+
+            downloadQrcode(zip, "{\"deviceId\":" + "\"" + deviceId + "\"" + "}", description);
+        }
+
+        // 生成zip文件并下载
+        zip.generateAsync({
+            type: 'blob'
+        }).then(function(content) {
+            // 下载的文件名
+            const filename = 'qrcode.zip';
+            // 创建隐藏的可下载链接
+            const eleLink = document.createElement('a');
+            eleLink.download = filename;
+            eleLink.style.display = 'none';
+            // 下载内容转变成blob地址
+            eleLink.href = URL.createObjectURL(content);
+            // 触发点击
+            document.body.appendChild(eleLink);
+            eleLink.click();
+            // 然后移除
+            document.body.removeChild(eleLink);
+        });
+    }
+
+    function downloadQrcode(zip, text, description) {
+        let canvas = $("#qrcode canvas")[0];
+        if (canvas)
+            $("#qrcode").html('');
+
+        jQuery('#qrcode').qrcode({
+            width: 500,
+            height: 500,
+            text: text
+        });
+        const context = $("#qrcode canvas")[0].getContext('2d');
+        context.fillStyle = '#000';
+        // context.font = '24px 黑体';
+        context.font="30px Verdana";
+        // context.fillText("Hello World!",10,50);
+        context.fillText(description, 40, 560);
+        let url = $("#qrcode canvas")[0].toDataURL('image/png', 1);
+        url = url.replace("data:image/png;base64,", "");
+
+        // $("#download").attr('href', url).get(0).click();
+
+        zip.file(description + ".png", url, {base64: true});
+    }
+</script>
+</body>
+
+</html>

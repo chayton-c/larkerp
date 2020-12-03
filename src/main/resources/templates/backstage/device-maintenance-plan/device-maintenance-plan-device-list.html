@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-L-admin1.0</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/lib/layui/lay/modules/laypage.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+    <script src="/js/util.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="/js/template/html5shiv.r29.html5.min.js"></script>
+    <script src="/js/template/respond-1.4.2.min.js"></script>
+    <![endif]-->
+</head>
+
+<body class="layui-anim layui-anim-up">
+<div class="x-nav">
+    <a class="layui-btn layui-btn-primary layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right"
+       href="javascript:location.replace(location.href);" title="刷新">
+        <i class="layui-icon" style="line-height:38px">ဂ</i></a>
+</div>
+<div class="x-body">
+    <div class="layui-row">
+        <form class="layui-form layui-col-md12 x-so" id="backstage-user-form">
+            <input type="hidden" name="pageSize" th:value="${page.pageSize}"/>
+            <input type="hidden" name="currentPage"/>
+            <input type="hidden" name="deviceMaintenancePlanId" th:value="${deviceMaintenancePlanId}"/>
+
+            <div class="layui-input-inline">
+                <input class="layui-input" placeholder="请输设备名称" name="deviceName" th:value="${deviceName}">
+            </div>
+
+            <div class="layui-input-inline">
+                <input class="layui-input" placeholder="请输区域名称" name="stationName" th:value="${stationName}">
+            </div>
+            <button class="layui-btn" lay-submit="" lay-filter="sreach"><i class="layui-icon">&#xe615;</i></button>
+        </form>
+    </div>
+    <xblock>
+        <button class="layui-btn" th:data-id="${deviceMaintenancePlanId}" onclick="x_admin_show(
+                            '添加设备',
+                            '/backstage/deviceMaintenancePlan/spareDeviceList?pageSize=10&deviceMaintenancePlanId='
+                            + this.getAttribute('data-id'),
+                             1200, 620
+                         )"><i class="layui-icon"></i>添加设备</button>
+        <button class="layui-btn" onclick="removeDeviceList()"><i class="layui-icon"></i>移除</button>
+        <button class="layui-btn" onclick="setTemplates()"><i class="layui-icon"></i>配置模板</button>
+        <button class="layui-btn" th:if="${deviceMaintenancePlan.repairClass == 0}" onclick="x_admin_show(
+                            '添加设备',
+                            '/backstage/deviceMaintenancePlan/deviceListSortPage?' + $('#backstage-user-form').serialize(),
+                             1400, 720, function() {window.location.reload()}
+                         )"><i class="layui-icon"></i>路径管理</button>
+    </xblock>
+    <table class="layui-table" lay-filter="akagi">
+        <thead>
+        <tr>
+            <th>
+                <div class="layui-unselect header layui-form-checkbox" lay-skin="primary"><i class="layui-icon">&#xe605;</i></div>
+            </th>
+            <th>厂区</th>
+            <th>区域</th>
+            <th>设备</th>
+            <th>测量模板</th>
+            <th>类型</th>
+            <th>子类型</th>
+            <th>编码</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="deviceMaintenancePlanDevice, iterstart : ${deviceMaintenancePlanDevices}">
+            <td>
+                <div class="layui-unselect layui-form-checkbox" lay-skin="primary"
+                     th:data-planId="${deviceMaintenancePlanId}"
+                     th:data-repairClass="${deviceMaintenancePlan.repairClass}"
+                     th:data-deviceSubTypeId='${deviceMaintenancePlanDevice.deviceSubTypeId}'
+                     th:data-deviceMaintenancePlanDeviceId='${deviceMaintenancePlanDevice.id}'
+                     th:data-deviceId='${deviceMaintenancePlanDevice.deviceId}'>
+                    <i class="layui-icon">&#xe605;</i>
+                </div>
+            </td>
+            <td th:text="${deviceMaintenancePlanDevice.railwayLineName}">厂区</td>
+            <td th:text="${deviceMaintenancePlanDevice.stationName}">区域</td>
+            <td th:text="${deviceMaintenancePlanDevice.deviceName}">设备</td>
+            <td th:text="${deviceMaintenancePlanDevice.measurementTemplateName}">测量模板</td>
+            <td th:text="${deviceMaintenancePlanDevice.deviceTypeName}">类型</td>
+            <td th:text="${deviceMaintenancePlanDevice.deviceSubTypeName}">子类型</td>
+            <td th:text="${deviceMaintenancePlanDevice.deviceCode}">编码</td>
+        </tr>
+        </tbody>
+    </table>
+    <div th:include="/common/page::page('backstage-user-form')"></div>
+
+</div>
+<script th:inline="javascript">
+
+    function setTemplates() {
+        const deviceMaintenancePlanDeviceIds = tableCheck.getAttribute('deviceMaintenancePlanDeviceId');
+        const deviceMaintenancePlanId = tableCheck.getAttribute('planId');
+        const deviceSubTypeId = tableCheck.getAttribute('deviceSubTypeId');
+        const repairClass = tableCheck.getAttribute('repairClass');
+
+        if (!deviceMaintenancePlanDeviceIds || deviceMaintenancePlanDeviceIds.length === 0) {
+            layer.alert('请选择需要配置的设备');
+            return;
+        }
+
+        if ($.unique(deviceSubTypeId).length !== 1) {
+            layer.alert('所选设备的子类型不一致');
+            return;
+        }
+        console.log(deviceSubTypeId);
+
+        x_admin_show(
+            '配置模板',
+            '/backstage/deviceMaintenancePlan/chooseMeasurementTemplates?deviceMaintenancePlanDeviceIds=' + deviceMaintenancePlanDeviceIds + '&deviceMaintenancePlanId=' + deviceMaintenancePlanId
+            + "&deviceSubTypeId=" + deviceSubTypeId + "&repairClass=" + $.unique(repairClass),
+            1200, 620
+        )
+
+    }
+
+    function removeDeviceList() {
+        const deviceIds = tableCheck.getAttribute('deviceId');
+        const deviceMaintenancePlanId = tableCheck.getAttribute('planId');
+        console.log(deviceIds);
+        $.ajax({
+            url: '/backstage/deviceMaintenancePlan/removeDeviceList',
+            type:'post',
+            data:{
+                'deviceIds':deviceIds,
+                'deviceMaintenancePlanId':deviceMaintenancePlanId
+            },
+            dataType: 'json',
+            success:function (result) {
+                if (!result.success) {
+                    layer.msg(result.msg);
+                    return false;
+                }
+
+                layer.msg("移除成功", {icon: 6, time: 500}, function () {
+                    // 获得frame索引
+                    const index = parent.layer.getFrameIndex(window.name);
+                    parent.location.reload();
+                    //关闭当前frame
+                    parent.layer.close(index);
+                });
+            }
+        })
+    }
+
+
+    function updateSeq(e) {
+        const id = $(e).attr('data-id');
+        const seq = $(e).val();
+
+        if (!seq)
+            return;
+
+        if (!isInteger(seq))
+            return;
+
+        $.ajax({
+            url: '/backstage/deviceMaintenancePlan/updateSeq',
+            type: 'get',
+            data: {
+                id: id,
+                seq: seq
+            },
+            dataType: 'json',
+            success: function (result) {
+                console.log(result);
+                if (!result.success) {
+                    layer.alert(result.msg);
+                    return false;
+                }
+            }
+        })
+    }
+</script>
+</body>
+
+</html>

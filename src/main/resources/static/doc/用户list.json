@@ -1,0 +1,16 @@
+[
+  {
+    "id": "fc9a9ac8-6f28-448e-ae50-70912f945a45",
+    "user_name": "akagi",
+    "display_name": "akagisann",
+    "work_area_id": "7ea4e913-e122-4141-add4-40ed0d39d54d",
+    "password": "123456"
+  },
+  {
+    "id": "d263d0b9-4dc5-4a37-98c5-e15888e3a920",
+    "user_name": "kaga",
+    "display_name": "kagasann",
+    "work_area_id": "7ea4e913-e122-4141-add4-40ed0d39d54d",
+    "password": "123456"
+  }
+]

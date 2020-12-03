@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-L-admin1.0</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script type="text/javascript" src="/js/jquery.min.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/lib/layui/lay/modules/laypage.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="/js/template/html5shiv.r29.html5.min.js"></script>
+    <script src="/js/template/respond-1.4.2.min.js"></script>
+    <![endif]-->
+</head>
+
+<body class="layui-anim layui-anim-up">
+<div class="x-nav">
+    <a class="layui-btn layui-btn-primary layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right"
+       href="javascript:location.replace(location.href);" title="刷新">
+        <i class="layui-icon" style="line-height:38px">ဂ</i></a>
+</div>
+<div class="x-body">
+    <div class="layui-row">
+        <form class="layui-form layui-col-md12 x-so" id="backstage-device-form">
+            <input type="hidden" name="pageSize" th:value="${page.pageSize}"/>
+            <input type="hidden" name="currentPage"/>
+
+            <input type="text"
+                   name="railwayLineName" placeholder="请输入厂区名"
+                   autocomplete="off" class="layui-input" th:value="${railwayLineName}">
+            <input type="text"
+                   name="workshopName" placeholder="请输入车间名"
+                   autocomplete="off" class="layui-input" th:value="${workshopName}">
+            <input type="text"
+                   name="stationName" placeholder="请输入区域名"
+                   autocomplete="off" class="layui-input" th:value="${stationName}">
+            <input type="text"
+                   name="deviceTypeName" placeholder="请输入设备类型"
+                   autocomplete="off" class="layui-input" th:value="${deviceTypeName}">
+            <input type="text"
+                   name="deviceName" placeholder="请输入设备名"
+                   autocomplete="off" class="layui-input" th:value="${deviceName}">
+            <input type="text"
+                   name="deviceCode" placeholder="请输入设备编码"
+                   autocomplete="off" class="layui-input" th:value="${deviceCode}">
+
+
+            <button class="layui-btn" lay-submit="" lay-filter="sreach"><i class="layui-icon">&#xe615;</i></button>
+        </form>
+    </div>
+    <xblock>
+        <button class="layui-btn" th:device-type-id="${selectDevice.deviceTypeId}"
+                onclick="x_admin_show('添加设备','/backstage/device/addPage?deviceTypeId=' + this.getAttribute('device-type-id'), 1200, 800)"><i
+                class="layui-icon"></i>添加
+        </button>
+<!--        <button type="button" class="layui-btn" id="import-semaphores"><i class="layui-icon"></i>导入信号机</button>-->
+        <button type="button" class="layui-btn" id="import-device"><i class="layui-icon"></i>导入设备</button>
+        <button class="layui-btn" onclick="downloadQrcodes()"><i class="layui-icon"></i>下载二维码</button>
+        <button class="layui-btn" onclick="showQrcode()"><i class="layui-icon"></i>展示二维码</button>
+    </xblock>
+    <table class="layui-table" lay-filter="akagi">
+        <thead>
+        <tr>
+            <th>
+                <div class="layui-unselect header layui-form-checkbox" lay-skin="primary"><i class="layui-icon">&#xe605;</i></div>
+            </th>
+            <th>所属厂区</th>
+            <th>区域</th>
+            <th>车间</th>
+            <th>设备类型</th>
+            <th>设备子类型</th>
+            <th>设备名</th>
+            <th>编码</th>
+            <th>位置信息</th>
+            <th>状态</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="device, iterstart : ${devices}">
+            <td>
+                <div class="layui-unselect layui-form-checkbox" lay-skin="primary"
+                     th:data-description="${device.railwayLineName + '-' + device.name}"
+                     th:data-id='${device.id}'>
+                    <i class="layui-icon">&#xe605;</i>
+                </div>
+            </td>
+            <td th:text="${device.railwayLineName}">所属厂区</td>
+            <td th:text="${device.stationName}">区域</td>
+            <td th:text="${device.workshopName}">车间</td>
+            <td th:text="${device.deviceTypeName}">设备类型</td>
+            <td th:text="${device.deviceSubTypeName}">设备子类型</td>
+            <td th:text="${device.name}">设备名</td>
+            <td th:text="${device.code}">编码</td>
+            <td th:text="${device.positionInfo}">位置信息</td>
+            <div>
+                <td th:if="${device.hide == 0}">显示</td>
+                <td th:if="${device.hide == 1}">隐藏</td>
+            </div>
+            <td class="td-manage">
+                <a title="编辑"
+                   th:data-id="${device.id}"
+                   th:data-deviceTypeId="${device.deviceTypeId}" class="layui-btn layui-btn-sm layui-btn-normal"
+                   onclick="x_admin_show(
+                            '编辑',
+                            '/backstage/device/infoPage?id=' + this.getAttribute('data-id'),
+                             1200, 800
+                         )"
+                   href="javascript:;">
+                    编辑
+                </a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <div th:include="/common/page::page('backstage-device-form')"></div>
+</div>
+<div id="qrcode" style="display:none"></div>
+<a id="download" download="qrcode.jpg" style="display:none"></a>
+<button id="save" style="display:none">save</button>
+<script type="text/javascript" src="/js/qrcode/device-qrcode.js"></script>
+<script type="text/javascript" src="/js/zip/zip.js"></script>
+<script th:inline="javascript">
+    layui.use(['form', 'upload'], function () {
+        var $ = layui.jquery
+            , upload = layui.upload;
+
+        //指定允许上传的文件类型
+        upload.render({
+            elem: '#import-devices'
+            , url: '/backstage/lkj/import'
+            , accept: 'file' //普通文件
+            , done: function (res) {
+                console.log(res)
+            }
+        });
+
+        //指定允许上传的文件类型
+        upload.render({
+            elem: '#import-semaphores'
+            , url: '/backstage/device/importSemaphore'
+            , accept: 'file' //普通文件
+            , done: function (res) {
+                if (!res.isSuccess)
+                    layer.alert(res.msg);
+                $('#find').click();
+            }
+        });
+
+        //指定允许上传的文件类型
+        upload.render({
+            elem: '#import-device'
+            , url: '/backstage/device/importDevice'
+            , accept: 'file' //普通文件
+            , done: function (res) {
+                if (!res.isSuccess)
+                    layer.alert(res.msg);
+                $('#find').click();
+            }
+        });
+
+    });
+
+    function showQrcode() {
+        const deviceIds = tableCheck.getAttribute('id');
+        const descriptions = tableCheck.getAttribute('description')
+
+        console.log(deviceIds);
+        console.log(descriptions);
+
+        let deviceId = deviceIds[0];
+        let description = descriptions[0];
+
+        if (!deviceId) {
+            layer.msg('请选择设备');
+            return;
+        }
+        if (deviceIds.length > 1) {
+            layer.msg('无法显示多个设备');
+            return;
+        }
+
+        let canvas = $("#qrcode canvas")[0];
+        if (canvas)
+            $("#akagi").html('');
+
+        let text = "{\"deviceId\":" + "\"" + deviceId + "\"" + "}";
+
+        layer.open({
+            area: ['450px', '450px'],
+            fixed: false, //否固定在可视区域
+            maxmin: true,
+            shadeClose: true,
+            shade: 0.4,
+            title: description,
+            content: '<div id="akagi"></div>'
+        });
+
+        jQuery('#akagi').qrcode({
+            width: 300,
+            height: 300,
+            text: text
+        });
+
+    }
+    function downloadQrcodes() {
+        const deviceIds = tableCheck.getAttribute('id');
+        const descriptions = tableCheck.getAttribute('description')
+
+        const zip = new JSZip();
+        for (let i = 0; i < deviceIds.length; i++) {
+            let deviceId = deviceIds[i];
+            let description = descriptions[i];
+
+            downloadQrcode(zip, "{\"deviceId\":" + "\"" + deviceId + "\"" + "}", description);
+        }
+
+        // 生成zip文件并下载
+        zip.generateAsync({
+            type: 'blob'
+        }).then(function(content) {
+            // 下载的文件名
+            const filename = 'qrcode.zip';
+            // 创建隐藏的可下载链接
+            const eleLink = document.createElement('a');
+            eleLink.download = filename;
+            eleLink.style.display = 'none';
+            // 下载内容转变成blob地址
+            eleLink.href = URL.createObjectURL(content);
+            // 触发点击
+            document.body.appendChild(eleLink);
+            eleLink.click();
+            // 然后移除
+            document.body.removeChild(eleLink);
+        });
+    }
+
+    function downloadQrcode(zip, text, description) {
+        let canvas = $("#qrcode canvas")[0];
+        if (canvas)
+            $("#qrcode").html('');
+
+        jQuery('#qrcode').qrcode({
+            width: 500,
+            height: 500,
+            text: text
+        });
+        const context = $("#qrcode canvas")[0].getContext('2d');
+        context.fillStyle = '#000';
+        // context.font = '24px 黑体';
+        context.font="30px Verdana";
+        // context.fillText("Hello World!",10,50);
+        context.fillText(description, 40, 560);
+        let url = $("#qrcode canvas")[0].toDataURL('image/png', 1);
+        url = url.replace("data:image/png;base64,", "");
+
+        // $("#download").attr('href', url).get(0).click();
+
+        zip.file(description + ".png", url, {base64: true});
+    }
+
+</script>
+</body>
+
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-L-admin1.0</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="/js/template/html5shiv.r29.html5.min.js"></script>
+    <script src="/js/template/respond-1.4.2.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+<div class="x-body">
+    <form action="" method="post" id="railway-line-info-form" class="layui-form layui-form-pane">
+        <input type="hidden" name="hide" value="0">
+        <!--/*@thymesVar id="measurementUnit" type="com.yingda.lkj.beans.entity.backstage.measurement.MeasurementUnit"*/-->
+        <input type="hidden" name="id" th:value="${measurementUnit.id}">
+
+        <div class="layui-form-item">
+            <label for="name" class="layui-form-label">
+                <span class="x-red">*</span>分组名称
+            </label>
+            <div class="layui-input-inline">
+                <input type="text" id="groupName" name="groupName" required lay-verify="required"
+                       autocomplete="off" class="layui-input" th:value="${measurementUnit.groupName}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label for="name" class="layui-form-label">
+                <span class="x-red">*</span>名称
+            </label>
+            <div class="layui-input-inline">
+                <input type="text" id="name" name="name" required lay-verify="required"
+                       autocomplete="off" class="layui-input" th:value="${measurementUnit.name}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">单位类型</label>
+            <div class="layui-input-inline">
+                <select name="valueType" lay-verify="required" required
+                        lay-search="" id="user-info-bureau" linkage-id="user-info-section">
+                    <option value="">选择测量类型</option>
+                    <option value="0" th:selected="${measurementUnit.valueType == 0}">数值</option>
+                    <option value="1" th:selected="${measurementUnit.valueType == 1}">字符</option>
+                    <option value="2" th:selected="${measurementUnit.valueType == 2}">图片</option>
+                    <option value="3" th:selected="${measurementUnit.valueType == 3}">视频</option>
+                    <option value="4" th:selected="${measurementUnit.valueType == 4}">音频</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label for="name" class="layui-form-label">
+                <span class="x-red">*</span>单位名称
+            </label>
+            <div class="layui-input-inline">
+                <input type="text" id="unitName" name="unitName" required lay-verify="required"
+                       autocomplete="off" class="layui-input" th:value="${measurementUnit.unitName}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label for="name" class="layui-form-label">
+                <span class="x-red">*</span>主功能码
+            </label>
+            <div class="layui-input-inline">
+                <input type="text" id="mainFunctionCode" name="mainFunctionCode" required lay-verify="required"
+                       autocomplete="off" class="layui-input" th:value="${measurementUnit.mainFunctionCode}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label for="name" class="layui-form-label">
+                <span class="x-red">*</span>子功能码
+            </label>
+            <div class="layui-input-inline">
+                <input type="text" id="subFunctionCode" name="subFunctionCode" required lay-verify="required"
+                       autocomplete="off" class="layui-input" th:value="${measurementUnit.subFunctionCode}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label for="name" class="layui-form-label">
+                <span class="x-red">*</span>描述
+            </label>
+            <div class="layui-input-inline" style="width: 500px">
+                <input type="text" id="description" name="description"
+                       autocomplete="off" class="layui-input" th:value="${measurementUnit.description}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">状态</label>
+            <div class="layui-input-inline">
+                <select name="hide" lay-verify="required" required
+                        lay-search="" linkage-id="user-info-section">
+                    <option value="">显示/隐藏</option>
+                    <option value="0" th:selected="${measurementUnit.hide == 0}">显示</option>
+                    <option value="1" th:selected="${measurementUnit.hide == 1}">隐藏</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label for="name" class="layui-form-label">
+                <span class="x-red">*</span>备注
+            </label>
+            <div class="layui-input-inline" style="width: 500px">
+                <input type="text" id="remark" name="remark"
+                       autocomplete="off" class="layui-input" th:value="${measurementUnit.remark}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <button class="layui-btn" lay-submit="" lay-filter="add">增加</button>
+        </div>
+    </form>
+</div>
+<script>
+    layui.use(['form', 'layer'], function () {
+        $ = layui.jquery;
+        var form = layui.form
+            , layer = layui.layer;
+
+        // 联动选择
+        form.on('select()', function (data) {
+            userWorkAreaLinkage(data.elem);
+        });
+
+        //监听提交
+        form.on('submit(add)', function (data) {
+            $.ajax({
+                url: '/backstage/measurementUnit/saveOrUpdate',
+                type: 'post',
+                data: $('#railway-line-info-form').serialize(),
+                dataType: 'json',
+                success: function (result) {
+                    console.log(result);
+                    if (!result.success) {
+                        alert(result.msg);
+                        return false;
+                    }
+
+                    layer.alert("提交成功", {icon: 6}, function () {
+                        // 获得frame索引
+                        const index = parent.layer.getFrameIndex(window.name);
+                        parent.location.reload();
+                        //关闭当前frame
+                        parent.layer.close(index);
+                    });
+                }
+            });
+
+            return false;
+        });
+    });
+
+
+    function userWorkAreaLinkage(e) {
+        const id = $(e).attr('id');
+
+        console.log(id)
+        if (id === 'executeUserId')
+            userLinkage(e);
+        if (id === 'workAreaId')
+            workAreaLinkage(e);
+    }
+
+    // 选择区间后，联动执行人
+    function workAreaLinkage(e) {
+        const workAreaId = $(e).val();
+
+        $('#executeUserId').html('<option value="">直接选择或搜索选择</option>');
+        layui.form.render("select");//重新渲染 固定写法
+
+        $.ajax({
+            url: '/client/user/getUserByWorkAreaId',
+            type: 'post',
+            data: 'workAreaId=' + workAreaId,
+            dataType: 'json',
+            success: function (result) {
+                console.log(result);
+
+                if (!result.success) {
+                    layer.msg(result.msg);
+                    return false;
+                }
+
+                $.each(result.obj, function (i, val) {
+                    $('#executeUserId').append('<option value="' + val.id + '">' + val.displayName + '</option>')
+                });
+
+                layui.form.render("select");//重新渲染 固定写法
+            }
+        });
+    }
+
+    // 选择执行人后，联动区间
+    function userLinkage(e) {
+        const userId = $(e).val();
+
+        $('#workAreaId').html('<option value="">直接选择或搜索选择</option>');
+        layui.form.render("select");//重新渲染 固定写法
+
+        $.ajax({
+            url: '/client/user/getWorkAreaByUserId',
+            type: 'post',
+            data: 'userId=' + userId,
+            dataType: 'json',
+            success: function (result) {
+                console.log(result);
+
+                if (!result.success) {
+                    alert(result.msg);
+                    return false;
+                }
+
+
+                $('#workAreaId').html('');
+                $.each(result.obj, function (i, val) {
+                    $('#workAreaId').append('<option value="' + val.id + '">' + val.name + '</option>')
+                });
+                $('#workAreaId').append('<option value="">直接选择或搜索选择</option>');
+
+                layui.form.render("select");//重新渲染 固定写法
+            }
+        });
+    }
+</script>
+</body>
+
+</html>

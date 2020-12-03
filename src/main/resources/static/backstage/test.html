@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>KalendaeDemo</title>
+</head>
+<body>
+<p>3指定div使用（多选）：</p>
+<div id="datepk" style="width: 100%;"></div>
+</body>
+<script type="text/javascript">
+    new Kalendae(document.getElementById("datepk"), {
+        months:1,
+        mode:'multiple',
+        selected:Kalendae.moment().subtract({M:1}),
+        subscribe: {
+        'change': function(date) {
+            const str = this.getSelected();
+            console.log(this.getSelected());
+        }
+    }
+    });
+</script>
+</html>

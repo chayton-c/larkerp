@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>设备历史记录比对</title>
+    <meta name="renderer" content="webkit|ie-comp|ie-stand">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <meta http-equiv="Cache-Control" content="no-siteapp"/>
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script type="text/javascript" src="/js/jquery.min.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/lib/layui/lay/modules/laypage.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+</head>
+<body>
+
+
+<form class="layui-form" id="datas" action="">
+    <input type="hidden" name="deviceId" th:value="${deviceId}"/>
+    <input type="hidden" name="measurementTemplateId" th:value="${measurementTemplateId}"/>
+    <div class="layui-form-item">
+        <label class="layui-form-label">测试项：</label>
+        <div class="layui-input-block">
+            <input th:each="measurementItem, iterstart : ${measurementItems}"
+                   th:title="${measurementItem.name}"
+                   th:value="${measurementItem.id}"
+                   checked
+                   type="checkbox" name="measurementItemIds[]">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">字段：</label>
+        <div class="layui-input-block">
+            <input th:each="measurementItemField, iterstart : ${measurementItemFields}"
+                   th:title="${measurementItemField.name}"
+                   th:value="${measurementItemField.associationCode}"
+                   checked
+                   type="checkbox" name="associationCodes[]">
+        </div>
+    </div>
+</form>
+<div class="x-body">
+    <!-- 为 ECharts 准备一个具备大小（宽高）的 DOM -->
+    <div id="main" style="width: 100%;height:700px;"></div>
+</div>
+<!--        <script src="https://cdn.bootcss.com/echarts/3.7.0/echarts.min.js"></script>-->
+<script src="/js/echarts/echarts.min.js"></script>
+<script src="/js/jquery.min.js"></script>
+<script src="/js/util.js"></script>
+<script type="text/javascript">
+
+    layui.use('form', function(){
+        const form = layui.form;
+
+        // 联动选择
+        form.on('checkbox()', function (data) {
+            getPiesDataThenDraw();
+        });
+    });
+
+    $(function() {
+        getPiesDataThenDraw();
+    })
+
+    function getPiesDataThenDraw() {
+        $.ajax({
+            url: '/backstage/measurementHistoryChats/chartsData',
+            type: 'post',
+            data: $('#datas').serialize(),
+            dataType: 'json',
+            success: function (result) {
+                console.log(result);
+                let deviceMaintenanceParameterChatsPojos = result.obj;
+                deviceMaintenanceParameterChatsPojos = deviceMaintenanceParameterChatsPojos ? deviceMaintenanceParameterChatsPojos : [];
+
+                // 折线名称
+                let legends = [];
+                if (deviceMaintenanceParameterChatsPojos.length !== 0) {
+                    for (let i = 0; i < deviceMaintenanceParameterChatsPojos.length; i++) {
+                        let deviceMaintenanceParameterChatsPojo = deviceMaintenanceParameterChatsPojos[i];
+                        legends.push(deviceMaintenanceParameterChatsPojo.name);
+                    }
+                }
+
+                const option = {
+                    title: {
+                        text: ''
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        formatter: function(param) {
+                            const data = param[0].data;
+                            console.log(param)
+                            return '<div class="showBox">测试项：' + data.itemName + '</div>' +
+                                '<div class="showBox">数值：' + data.value[1] + '</div>' +
+                                '<div class="showBox">测量时间：' + data.value[0] + '</div>';
+                        }
+                    },
+                    legend: {
+                        data: legends
+                    },
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '3%',
+                        containLabel: true
+                    },
+                    toolbox: {
+                        feature: {
+                            saveAsImage: {}
+                        }
+                    },
+                    xAxis: {
+                        type: 'time',
+                        name: '时间',
+                    },
+                    yAxis: {
+                        type: 'value'
+                    },
+                    series: deviceMaintenanceParameterChatsPojos
+                };
+
+                console.log(deviceMaintenanceParameterChatsPojos);
+
+                drawPies(option);
+            }
+        });
+    }
+
+    function drawPies(option) {
+        // 基于准备好的dom，初始化echarts实例
+        const myChart = echarts.init(document.getElementById('main'));
+
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option, true);
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-L-admin1.0</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+    <script src="/js/util.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="/js/template/html5shiv.r29.html5.min.js"></script>
+    <script src="/js/template/respond-1.4.2.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+
+    <button type="button" class="layui-btn" id="import-semaphore"><i class="layui-icon"></i>导入信号机</button>
+
+    <button type="button" class="layui-btn" onclick="downloadSemaphoresTemplate()"><i class="layui-icon"></i>下载模板</button>
+
+    <div class="layui-upload-drag" id="test10">
+        <i class="layui-icon"></i>
+        <p>点击上传授权证书</p>
+    </div>
+
+
+
+<script>
+
+    layui.use(['form', 'upload', 'layer'], function () {
+        const $ = layui.jquery
+            , upload = layui.upload
+            , form = layui.form
+            , layer = layui.layer;
+
+        //指定允许上传的文件类型
+        upload.render({
+            elem: '#import-semaphores'
+            , url: '/backstage/device/importSemaphore'
+            , accept: 'file' //普通文件
+            , done: function (res) {
+                if (!res.isSuccess)
+                    alert(res.msg);
+                $('#find').click();
+            }
+        });
+
+
+        //上传模板， 指定上传文件类型
+        upload.render({
+            elem: '#test10',
+            url: '/backstage/device/uploadTemplate',
+            accept: 'file',
+            done: function (res) {
+                if (!res.success) {
+                    layer.alert(res.msg);
+                    return;
+                }
+                layer.alert("上传成功");
+            }
+
+        })
+
+        //导出模板
+        form.on('submit(download-semaphoresTemplate)', function () {
+            window.location.href = '/backstage/device/downloadTemplate';
+        })
+
+    });
+
+function downloadSemaphoresTemplate() {
+    window.location.href = '/backstage/device/downloadTemplate';
+}
+
+</script>
+</body>
+
+</html>

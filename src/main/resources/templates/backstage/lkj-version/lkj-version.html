@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-L-admin1.0</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/lib/layui/lay/modules/laypage.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="/js/template/html5shiv.r29.html5.min.js"></script>
+    <script src="/js/template/respond-1.4.2.min.js"></script>
+    <![endif]-->
+    <style>
+        .layui-table th {
+            font-weight: bold;
+            background-color: #5FB878;
+            color: #fff;
+            text-align: center;
+            font-size: 50px;
+        }
+
+        .layui-table th span {
+            font-weight: bold;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body class="layui-anim layui-anim-up">
+<div class="x-nav">
+    <a class="layui-btn layui-btn-primary layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right"
+       href="javascript:location.replace(location.href);" title="刷新">
+        <i class="layui-icon" style="line-height:38px">ဂ</i></a>
+</div>
+<div class="x-body">
+    <div class="layui-row">
+        <form class="layui-form layui-col-md12 x-so" id="backstage-lkj-form">
+            <input type="hidden" name="pageSize" th:value="${page.pageSize}"/>
+            <input type="hidden" name="currentPage"/>
+
+            <div class="layui-input-inline" th:include="/common/routingSelect::routingSelect()"></div>
+            <div class="layui-input-inline">
+                <select id="railway-line-select" name="railwayLineId" lay-search="">
+                    <option value="">选择或输入厂区</option>
+                    <option th:each="railwayLine, iterstart : ${railwayLines}" th:value="${railwayLine.id}" th:text="${railwayLine.name}"
+                            th:selected="${railwayLineId == railwayLine.id}">厂区
+                    </option>
+                </select>
+            </div>
+            <div class="layui-input-inline">
+                <select id="fragment-id" name="fragmentId" lay-search="">
+                    <option value="">选择或输入区间</option>
+                    <option th:each="fragment, iterstart : ${fragments}" th:value="${fragment.id}" th:text="${fragment.name}"
+                            th:selected="${fragmentId == fragment.id}">区间
+                    </option>
+                </select>
+            </div>
+            <div class="layui-input-inline">
+                <select name="retrograde" lay-search="">
+                    <option value="">请选择方向</option>
+                    <option value="0" th:selected="${retrograde == '0'}">正向</option>
+                    <option value="1" th:selected="${retrograde == '1'}">逆向</option>
+                    <option value="2" th:selected="${retrograde == '2'}">半自闭</option>
+                </select>
+            </div>
+
+            <div class="layui-input-inline">
+                <select name="downriver" lay-search="">
+                    <option value="">请选择行别</option>
+                    <option value="0" th:selected="${downriver == '0'}">上行</option>
+                    <option value="1" th:selected="${downriver == '1'}">下行</option>
+                    <option value="2" th:selected="${downriver == '2'}">半自闭</option>
+                </select>
+            </div>
+
+            <div class="layui-input-inline">
+                <select name="tableTypeStr" lay-search="">
+                    <option value="">请选择标注类型</option>
+                    <option value="1" th:selected="${tableTypeStr == '1'}">表1</option>
+                    <option value="2" th:selected="${tableTypeStr == '2'}">表2</option>
+                    <option value="3" th:selected="${tableTypeStr == '3'}">表3</option>
+                    <option value="4" th:selected="${tableTypeStr == '4'}">表4</option>
+                </select>
+            </div>
+
+            <button class="layui-btn" lay-submit="" lay-filter="sreach"><i class="layui-icon">&#xe615;</i></button>
+            <div class="layui-btn" lay-submit lay-filter="exportLkj">导出</div>
+
+            <div style="margin-top: 10px">
+                <div class="layui-input-inline">
+                    <select id="lkj-version-id" name="lkjVersionId" lay-search="">
+                        <option value="">选择或输入版本</option>
+                        <option th:each="lkjVersion, iterstart : ${lkjVersions}" th:value="${lkjVersion.id}" th:text="${lkjVersion.name}"
+                                th:selected="${lkjVersionId == lkjVersion.id}">厂区
+                        </option>
+                    </select>
+                </div>
+                <div class="layui-input-inline">
+                    <select id="compare-lkj-version-id" name="compareLkjVersionId" lay-search="">
+                        <option value="">选择对照版本</option>
+                        <option th:each="lkjVersion, iterstart : ${lkjVersions}" th:value="${lkjVersion.id}" th:text="${lkjVersion.name}"
+                                th:selected="${compareLkjVersionId == lkjVersion.id}">厂区
+                        </option>
+                    </select>
+                </div>
+                <div class="layui-btn" lay-submit lay-filter="compare">对照版本</div>
+                <div class="layui-btn" lay-submit lay-filter="createVersion">生成版本</div>
+            </div>
+        </form>
+    </div>
+    <table class="layui-table" lay-filter="layFilter">
+        <thead>
+        <tr>
+            <!--            <th>电厂</th>-->
+            <!--            <th>局编号</th>-->
+            <th lay-data="{field:'2'}">线名</th>
+            <th lay-data="{field:'3'}">标注</th>
+            <th lay-data="{field:'4'}">方向</th>
+            <th lay-data="{field:'5'}">行别</th>
+            <th lay-data="{field:'6'}">区域</th>
+            <th lay-data="{field:'7'}">信号机编号</th>
+            <th lay-data="{field:'distance'}">信号机间距离(m)</th>
+            <th lay-data="{field:'8'}">信号机位置(km)</th>
+            <th lay-data="{field:'9'}">信号机类型</th>
+            <th lay-data="{field:'10'}">轨道电路制式</th>
+            <th lay-data="{field:'11'}">中心频率</th>
+            <th lay-data="{field:'12'}">UM71类别</th>
+            <th lay-data="{field:'13'}">闭塞方式</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="semaphore, iterstart : ${semaphores}">
+            <!--            <td th:text="${semaphore.bureauName}" >电厂</td>-->
+            <!--            <td th:text="${semaphore.bureauCode}" >局编号</td>-->
+            <td th:text="${semaphore.railwayLineName}">线名</td>
+            <td th:text="${semaphore.tableType}">标注</td>
+            <td th:text="${semaphore.retrograde}">方向</td>
+            <td th:text="${semaphore.downriver}">行别</td>
+            <td th:text="${semaphore.stationName}">区域</td>
+            <td th:text="${semaphore.code}">信号机编号</td>
+            <td>
+                <div th:each="distance, iterstart : ${semaphore.distanceStyle}">
+                    <div th:style="iterstart.size >= '6' ? 'height:39px' : 'height:40px'">
+                        <div th:style="${(iterstart.index + 1) == iterstart.size ? 'display:none' : ''}" th:text="${distance}">距离</div>
+                        <!-- 最后一个不画分割线 -->
+                        <hr th:if="${(iterstart.index + 2) < iterstart.size}" class="layui-bg-gray" style="position: relative; bottom: 3px;">
+                    </div>
+                </div>
+            </td>
+            <td th:text="${semaphore.position}">信号机位置(km)</td>
+            <td th:text="${semaphore.semaphoreType}">信号机类型</td>
+            <td th:text="${semaphore.trackSystem}">轨道电路制式</td>
+            <td th:text="${semaphore.centerFrequency}">中心频率</td>
+            <td th:text="${semaphore.UM71Type}">UM71类别</td>
+            <td th:text="${semaphore.occlusionMethod}">闭塞方式</td>
+        </tr>
+        </tbody>
+    </table>
+    <div th:include="/common/page::page('backstage-lkj-form')"></div>
+
+    <script th:inline="javascript">
+        const table = layui.table;
+
+        layui.use(['form', 'layer'], function () {
+            const form = layui.form;
+
+            // 联动选择
+            form.on('select()', function (data) {
+                fragmentLinkage(data.elem);
+                changeDataType(data.elem);
+            });
+
+            form.on('submit(createVersion)', function(data) {
+                const params = data.field;
+                let dataTypeId = params.dataTypeId;
+                console.log(dataTypeId);
+                x_admin_show('添加厂区','/backstage/lkjVersion/dataVersionInfo?dataTypeId=' + dataTypeId);
+            });
+
+            // 联动选择
+            form.on('submit(compare)', function (data) {
+                const params = data.field;
+
+                let lkjVersionId = params.lkjVersionId;
+                let compareLkjVersionId = params.compareLkjVersionId;
+                if (compareLkjVersionId == null || compareLkjVersionId == '') {
+                    layer.msg("选择对照版本为必填项", {icon: 6});
+                } else {
+                    x_admin_show('版本比对', '/backstage/lkjVersion/compare?baseVersionId=' + lkjVersionId
+                        + '&compareLkjVersionId=' + compareLkjVersionId
+                        , 1400, 800);
+                }
+            });
+
+
+            // 联动选择
+            form.on('submit(exportLkj)', function (data) {
+
+                const params = data.field;
+
+                let railwayLineId = params.railwayLineId;
+                let fragmentId = params.fragmentId;
+                let retrograde = params.retrograde;
+                let downriver = params.downriver;
+                let lkjVersionId = params.lkjVersionId;
+
+                // if (!fragmentId) {
+                //     layer.msg("请选择区间进行导出");
+                //     return false;
+                // }
+
+                window.location.href = '/backstage/lkjVersion/export?railwayLineId=' + railwayLineId + '&fragmentId=' + fragmentId
+                    + '&downriver=' + downriver + '&retrograde=' + retrograde + '&lkjVersionId=' + lkjVersionId;
+            });
+
+
+            // 联动选择
+            form.on('submit(createLkjVersion)', function (data) {
+                if (!confirm('是否确认生成版本?'))
+                    return;
+
+                let loading = layer.load(2, {
+                    shade: false
+                });
+                $.ajax({
+                    url: '/backstage/lkjVersion/create',
+                    type: 'post',
+                    dataType: 'json',
+                    success: function (result) {
+                        console.log(result);
+                        if (!result.success) {
+                            alert(result.msg);
+                            return false;
+                        }
+
+                        layer.close(loading);
+                        layer.alert('操作成功!');
+                    }
+                })
+            });
+        });
+
+        $(function () {
+            layui.use(['upload', 'table'], function () {
+                var $ = layui.jquery
+                    , upload = layui.upload;
+                const table = layui.table;
+
+                table.init('layFilter', {
+                    height: document.documentElement.clientHeight - 250,
+                    page: false,
+                    limit: 30000,
+                    done: function (res, curr, count) {
+                        // 每组颜色不用
+                        let fixedNode = $(".layui-table-body")[0];
+                        let child = $(fixedNode).find("tr");
+                        let previousDistance = '';
+                        let index = 0;
+                        for (let i = 0; i < res.data.length; i++) {
+                            const currentDistance = res.data[i].distance;
+                            if (currentDistance !== previousDistance)
+                                index++;
+
+                            previousDistance = currentDistance;
+                            $(child[i]).css("background-color", index % 2 === 0 ? "whilte" : "#f2f2f2");
+                        }
+
+                        layuiRowspan('distance', 1);
+                    }
+                });
+
+                //指定允许上传的文件类型
+                upload.render({
+                    elem: '#test3'
+                    , url: '/backstage/lkj/import'
+                    , accept: 'file' //普通文件
+                    , done: function (res) {
+                        console.log(res)
+                    }
+                });
+            });
+        });
+
+        /*用户-停用*/
+        function member_stop(obj, id) {
+            layer.confirm('确认要停用吗？', function (index) {
+
+                if ($(obj).attr('title') == '启用') {
+
+                    //发异步把用户状态进行更改
+                    $(obj).attr('title', '停用')
+                    $(obj).find('i').html('&#xe62f;');
+
+                    $(obj).parents("tr").find(".td-status").find('span').addClass('layui-btn-disabled').html('已停用');
+                    layer.msg('已停用!', {icon: 5, time: 1000});
+
+                } else {
+                    $(obj).attr('title', '启用')
+                    $(obj).find('i').html('&#xe601;');
+
+                    $(obj).parents("tr").find(".td-status").find('span').removeClass('layui-btn-disabled').html('已启用');
+                    layer.msg('已启用!', {icon: 5, time: 1000});
+                }
+
+            });
+        }
+
+        /*用户-删除*/
+        function member_del(obj, id) {
+            layer.confirm('确认要删除吗？', function (index) {
+                //发异步删除数据
+                $(obj).parents("tr").remove();
+                layer.msg('已删除!', {icon: 1, time: 1000});
+            });
+        }
+
+
+        function delAll(argument) {
+            var data = tableCheck.getData();
+
+            layer.confirm('确认要删除吗？' + data, function (index) {
+                //捉到所有被选中的，发异步进行删除
+                layer.msg('删除成功', {icon: 1});
+                $(".layui-form-checked").not('.header').parents('tr').remove();
+            });
+        }
+
+
+        function merge(res) {
+
+            var data = res.data;
+            var mergeIndex = 0;//定位需要添加合并属性的行数
+            var mark = 1; //这里涉及到简单的运算，mark是计算每次需要合并的格子数
+            var columsName = ['id', 'name'];//需要合并的列名称
+            var columsIndex = [0, 1];//需要合并的列索引值
+
+            for (var k = 0; k < columsName.length; k++) { //这里循环所有要合并的列
+                var trArr = $(".layui-table-body>.layui-table").find("tr");//所有行
+                for (var i = 1; i < res.data.length; i++) { //这里循环表格当前的数据
+                    var tdCurArr = trArr.eq(i).find("td").eq(columsIndex[k]);//获取当前行的当前列
+                    var tdPreArr = trArr.eq(mergeIndex).find("td").eq(columsIndex[k]);//获取相同列的第一列
+
+                    if (data[i][columsName[k]] === data[i - 1][columsName[k]]) { //后一行的值与前一行的值做比较，相同就需要合并
+                        mark += 1;
+                        tdPreArr.each(function () {//相同列的第一列增加rowspan属性
+                            $(this).attr("rowspan", mark);
+                        });
+                        tdCurArr.each(function () {//当前行隐藏
+                            $(this).css("display", "none");
+                        });
+                    } else {
+                        mergeIndex = i;
+                        mark = 1;//一旦前后两行的值不一样了，那么需要合并的格子数mark就需要重新计算
+                    }
+                }
+                mergeIndex = 0;
+                mark = 1;
+            }
+        }
+
+        function getHistory(e) {
+            console.log($(e).attr('data-lkj'));
+        }
+
+        //合并数据表格行
+        function layuiRowspan(fieldNameTmp, index, flag) {
+            let fieldName = [];
+
+            if (typeof fieldNameTmp == "string")
+                fieldName.push(fieldNameTmp);
+            else
+                fieldName = fieldName.concat(fieldNameTmp);
+
+            for (let i = 0; i < fieldName.length; i++)
+                execRowspan(fieldName[i], index, flag);
+        }
+
+        function execRowspan(fieldName, index, flag) {
+            // 1为不冻结的情况，左侧列为冻结的情况
+            let fixedNode = index === 1 ? $(".layui-table-body")[index - 1] : (index === 3 ? $(".layui-table-fixed-r") : $(".layui-table-fixed-l"));
+            // 左侧导航栏不冻结的情况
+            let child = $(fixedNode).find("td");
+            let childFilterArr = [];
+            // 获取data-field属性为fieldName的td
+            for (let i = 0; i < child.length; i++)
+                if (child[i].getAttribute("data-field") === fieldName)
+                    childFilterArr.push(child[i]);
+
+            // 获取td的个数和种类
+            let childFilterTextObj = {};
+            for (let i = 0; i < childFilterArr.length; i++) {
+                let childText = flag ? childFilterArr[i].innerHTML : childFilterArr[i].textContent;
+                if (childFilterTextObj[childText] === undefined) {
+                    childFilterTextObj[childText] = 1;
+                } else {
+                    let num = childFilterTextObj[childText];
+                    childFilterTextObj[childText] = num * 1 + 1;
+                }
+            }
+            let canRowspan = true;
+            let maxNum;//以前列单元格为基础获取的最大合并数
+            let finalNextIndex;//获取其下第一个不合并单元格的index
+            let finalNextKey;//获取其下第一个不合并单元格的值
+            for (let i = 0; i < childFilterArr.length; i++) {
+                (maxNum > 9000 || !maxNum) && (maxNum = $(childFilterArr[i]).prev().attr("rowspan") && fieldName !== "8" ? $(childFilterArr[i]).prev().attr("rowspan") : 9999);
+                let key = flag ? childFilterArr[i].innerHTML : childFilterArr[i].textContent;//获取下一个单元格的值
+                let nextIndex = i + 1;
+                let tdNum = childFilterTextObj[key];
+                let curNum = maxNum < tdNum ? maxNum : tdNum;
+                if (canRowspan) {
+                    for (let j = 1; j <= curNum && (i + j < childFilterArr.length);) {//循环获取最终合并数及finalNext的index和key
+                        finalNextKey = flag ? childFilterArr[i + j].innerHTML : childFilterArr[i + j].textContent;
+                        finalNextIndex = i + j;
+                        if ((key !== finalNextKey && curNum > 1) || maxNum === j) {
+                            canRowspan = true;
+                            curNum = j;
+                            break;
+                        }
+                        j++;
+                        if ((i + j) === childFilterArr.length) {
+                            finalNextKey = undefined;
+                            finalNextIndex = i + j;
+                            break;
+                        }
+                    }
+                    childFilterArr[i].setAttribute("rowspan", curNum);
+                    if ($(childFilterArr[i]).find("div.rowspan").length > 0) { // 设置td内的div.rowspan高度适应合并后的高度
+                        $(childFilterArr[i]).find("div.rowspan").parent("div.layui-table-cell").addClass("rowspanParent");
+                        $(childFilterArr[i]).find("div.layui-table-cell")[0].style.height = curNum * 38 - 10 + "px";
+                    }
+                    canRowspan = false;
+                } else {
+                    childFilterArr[i].style.display = "none";
+                }
+                if (--childFilterTextObj[key] === 0 | --maxNum === 0 | --curNum === 0 || (finalNextKey !== undefined && nextIndex === finalNextIndex)) {//||(finalNextKey!=undefined&&key!=finalNextKey)
+                    canRowspan = true;
+                }
+                if (curNum === 1)
+                    $(childFilterArr[i]).find("div.layui-table-cell")[0].style.height = 26 + "px";
+                if (curNum > 1)
+                    $(childFilterArr[i]).find("div.layui-table-cell")[0].style.height = curNum * 39 + "px";
+
+            }
+        }
+
+
+        function fragmentLinkage(e) {
+            const id = $(e).attr('id');
+            if (id !== 'railway-line-select')
+                return;
+
+            const railwayLineId = $(e).val();
+            $('#fragment-id').html('<option value="">直接选择或搜索选择</option>');
+
+            layui.form.render("select");//重新渲染 固定写法
+
+            if (!railwayLineId)
+                return;
+
+            $.ajax({
+                url: '/client/railwayLine/getFragments',
+                type: 'post',
+                data: 'railwayLineId=' + railwayLineId,
+                dataType: 'json',
+                success: function (result) {
+                    if (!result.success) {
+                        alert(result.msg);
+                        return false;
+                    }
+
+                    $.each(result.obj, function (i, val) {
+                        $('#fragment-id').append('<option value="' + val.id + '">' + val.name + '</option>')
+                    });
+
+                    layui.form.render("select");//重新渲染 固定写法
+                }
+            });
+        }
+    </script>
+</div>
+</body>
+
+</html>

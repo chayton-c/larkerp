@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-L-admin1.0</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/lib/layui/lay/modules/laypage.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+    <script src="/js/util.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="/js/template/html5shiv.r29.html5.min.js"></script>
+    <script src="/js/template/respond-1.4.2.min.js"></script>
+    <![endif]-->
+</head>
+
+<body class="layui-anim layui-anim-up">
+<div class="x-nav">
+    <a class="layui-btn layui-btn-primary layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right"
+       href="javascript:location.replace(location.href);" title="刷新">
+        <i class="layui-icon" style="line-height:38px">ဂ</i></a>
+</div>
+<div class="x-body">
+    <div class="layui-row">
+        <form class="layui-form layui-col-md12 x-so" id="backstage-user-form">
+            <input type="hidden" name="pageSize" th:value="${page.pageSize}"/>
+            <input type="hidden" name="currentPage"/>
+            <input type="hidden" name="deviceMaintenancePlanId" th:value="${deviceMaintenancePlanId}"/>
+
+            <div class="layui-input-inline">
+                <input class="layui-input" placeholder="请输设备名称" name="deviceName" th:value="${deviceName}">
+            </div>
+
+            <div class="layui-input-inline">
+                <input class="layui-input" placeholder="请输区域名称" name="stationName" th:value="${stationName}">
+            </div>
+            <button class="layui-btn" lay-submit="" lay-filter="sreach"><i class="layui-icon">&#xe615;</i></button>
+        </form>
+    </div>
+<!--    <xblock>-->
+<!--        <button class="layui-btn" onclick="moveUp()"><i class="layui-icon"></i>上移</button>-->
+<!--        <button class="layui-btn" onclick="moveDown()"><i class="layui-icon"></i>下移</button>-->
+<!--    </xblock>-->
+    <table class="layui-table" lay-filter="akagi">
+        <thead>
+        <tr>
+            <th>
+                <div class="layui-unselect header layui-form-checkbox" lay-skin="primary"><i class="layui-icon">&#xe605;</i></div>
+            </th>
+            <th>厂区</th>
+            <th>区域</th>
+            <th>设备</th>
+            <th>测量模板</th>
+            <th>类型</th>
+            <th>子类型</th>
+            <th>编码</th>
+            <th>排序</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="deviceMaintenancePlanDevice, iterstart : ${deviceMaintenancePlanDevices}">
+            <td>
+                <div class="layui-unselect layui-form-checkbox" lay-skin="primary"
+                     th:data-planId="${deviceMaintenancePlanId}"
+                     th:data-repairClass="${deviceMaintenancePlan.repairClass}"
+                     th:data-deviceSubTypeId='${deviceMaintenancePlanDevice.deviceSubTypeId}'
+                     th:data-deviceMaintenancePlanDeviceId='${deviceMaintenancePlanDevice.id}'
+                     th:data-seq='${deviceMaintenancePlanDevice.seq}'
+                     th:data-deviceId='${deviceMaintenancePlanDevice.deviceId}'>
+                    <i class="layui-icon">&#xe605;</i>
+                </div>
+            </td>
+            <td th:text="${deviceMaintenancePlanDevice.railwayLineName}">厂区</td>
+            <td th:text="${deviceMaintenancePlanDevice.stationName}">区域</td>
+            <td th:text="${deviceMaintenancePlanDevice.deviceName}">设备</td>
+            <td th:text="${deviceMaintenancePlanDevice.measurementTemplateName}">测量模板</td>
+            <td th:text="${deviceMaintenancePlanDevice.deviceTypeName}">类型</td>
+            <td th:text="${deviceMaintenancePlanDevice.deviceSubTypeName}">子类型</td>
+            <td th:text="${deviceMaintenancePlanDevice.deviceCode}">编码</td>
+            <td><input type="text"
+                       th:data-id="${deviceMaintenancePlanDevice.id}"
+                       th:value="${deviceMaintenancePlanDevice.seq}"
+                       class="layui-input x-sort" name="seq" oninput="updateSeq($(this).attr('data-id'), $(this).val())"></td>
+        </tr>
+        </tbody>
+    </table>
+    <div th:include="/common/page::page('backstage-user-form')"></div>
+
+</div>
+<script src="https://cdn.bootcdn.net/ajax/libs/TableDnD/1.0.3/jquery.tablednd.min.js"></script>
+<script th:inline="javascript">
+    function moveUp() {
+        const id = tableCheck.getAttribute('deviceMaintenancePlanDeviceId');
+        console.log(id);
+        const seq = tableCheck.getAttribute('seq');
+        updateSeq(id, Number(seq) - 1);
+    }
+
+    function moveDown() {
+        const id = tableCheck.getAttribute('deviceMaintenancePlanDeviceId');
+        console.log(id);
+        const seq = tableCheck.getAttribute('seq');
+        updateSeq(id, Number(seq) + 1);
+    }
+
+    function updateSeq(id, seq) {
+        if (!seq)
+            return;
+
+        if (!isInteger(seq))
+            return;
+
+        $.ajax({
+            url: '/backstage/deviceMaintenancePlan/updateSeq',
+            type: 'get',
+            data: {
+                id: id.toString(),
+                seq: seq
+            },
+            dataType: 'json',
+            success: function (result) {
+                console.log(result);
+                if (!result.success) {
+                    layer.alert(result.msg);
+                    return false;
+                }
+
+                window.location.reload();
+            }
+        })
+    }
+
+    layui.use(['form', 'upload', 'laydate'], function () {
+        const $ = layui.jquery
+            , upload = layui.upload
+            , laydate = layui.laydate;
+    });
+
+    $("#akagi").tableDnD({
+        //滚动的速度
+        scrollAmount:10,
+        onDragClass:'highlight',
+        //当拖动排序完成后
+        onDrop: function(table,row) {
+            console.log(table);
+        },
+        onDragStart:function(table,row){
+            console.log(row.id);
+        },
+    });
+</script>
+</body>
+
+</html>

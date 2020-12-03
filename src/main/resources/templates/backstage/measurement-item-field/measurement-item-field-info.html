@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-L-admin1.0</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="/js/template/html5shiv.r29.html5.min.js"></script>
+    <script src="/js/template/respond-1.4.2.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+<div class="x-body">
+    <form action="" method="post" id="railway-line-info-form" class="layui-form layui-form-pane">
+        <input type="hidden" name="hide" value="0">
+        <!--/*@thymesVar id="measurementItemField" type="com.yingda.lkj.beans.entity.backstage.measurement.MeasurementItemField"*/-->
+        <input type="hidden" name="id" th:value="${measurementItemField.id}">
+        <!--/*@thymesVar id="measurementItemId" type="java.lang.String"*/-->
+        <input type="hidden" name="measurementItemId" th:value="${measurementItemId}">
+        <input type="hidden" name="groupId" th:value="${measurementItemField.groupId}">
+        <input type="hidden" name="measurementTemplateId" th:value="${measurementItemField.measurementTemplateId}">
+        <input type="hidden" name="associationCode" th:value="${measurementItemField.associationCode}">
+
+        <div class="layui-form-item">
+            <label for="name" class="layui-form-label">
+                电气特性
+            </label>
+            <div class="layui-input-inline" style="width: 400px">
+                <select id="deviceMeasurementItemId" class="layui-select" name="deviceMeasurementItemId" lay-search="">
+                    <option value="" th:if="${measurementItemField.deviceMeasurementItemId == null}">非电气特性测量类型可不选</option>
+                    <option th:each="deviceMeasurementItem, iterstart : ${deviceMeasurementItems}" th:value="${deviceMeasurementItem.id}"
+                            th:text="${deviceMeasurementItem.name}"
+                            th:if="${deviceMeasurementItem.id == measurementItemField.deviceMeasurementItemId
+                                        || measurementItemField.deviceMeasurementItemId == null}"
+                            th:selected="${deviceMeasurementItem.id == measurementItemField.deviceMeasurementItemId}">
+                        设备字段
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label for="name" class="layui-form-label">
+                <span class="x-red">*</span>单位分组
+            </label>
+            <div class="layui-input-inline" style="width: 400px">
+                <select id="measurementUnitGroupName" class="layui-select" name="groupName" lay-search="">
+                    <option value="">直接选择或搜索选择</option>
+                    <!--/*@thymesVar id="measurementUnits" type="java.util.ArrayList"*/-->
+                    <!--/*@thymesVar id="measurementUnit" type="com.yingda.lkj.beans.entity.backstage.measurement.MeasurementUnit"*/-->
+                    <option th:each="measurementUnitGroupName, iterstart : ${measurementUnitGroupNames}" th:value="${measurementUnitGroupName}"
+                            th:text="${measurementUnitGroupName}"
+                            th:selected="${measurementUnitGroupName == measurementUnit.groupName}">
+                        设备子类型
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label for="name" class="layui-form-label">
+                <span class="x-red">*</span>测量单位
+            </label>
+            <div class="layui-input-inline" style="width: 400px">
+                <select id="measurementUnitId" class="layui-select" name="measurementUnitId" lay-search="">
+                    <option th:if="${measurementUnit != null}"
+                            th:value="${measurementUnit.id}"
+                            th:selected="${true}"
+                            th:text="${measurementUnit.name}">
+                        测量单位
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label for="name" class="layui-form-label">
+                <span class="x-red">*</span>名称
+            </label>
+            <div class="layui-input-inline">
+                <input type="text" id="name" name="name" required lay-verify="required"
+                       autocomplete="off" class="layui-input" th:value="${measurementItemField.name}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label for="name" class="layui-form-label">
+                <span class="x-red">*</span>单位名称
+            </label>
+            <div class="layui-input-inline">
+                <input type="text" id="unitName" name="unitName" required lay-verify="required"
+                       autocomplete="off" class="layui-input" th:value="${measurementItemField.unitName}">
+            </div>
+        </div>
+
+        <div th:style="${measurementUnit.valueType == 0 ? 'display:block' : 'display:none'}"
+             class="layui-form-item" id="maxValueDiv">
+            <label for="name" class="layui-form-label">
+                <span class="x-red">*</span>最大值
+            </label>
+            <div class="layui-input-inline">
+                <input type="number" id="maxValue" name="maxValue" value="0" required lay-verify="required"
+                       autocomplete="off" class="layui-input" th:value="${measurementItemField.maxValue}">
+            </div>
+        </div>
+
+        <div th:style="${measurementUnit.valueType == 0 ? 'display:block' : 'display:none'}"
+             class="layui-form-item" id="minValueDiv">
+            <label for="name" class="layui-form-label">
+                <span class="x-red">*</span>最小值
+            </label>
+            <div class="layui-input-inline">
+                <input type="number" id="minValue" name="minValue" value="0" required lay-verify="required"
+                       autocomplete="off" class="layui-input" th:value="${measurementItemField.maxValue}">
+            </div>
+        </div>
+
+        <div th:style="${measurementUnit.valueType == 1 ? 'display:block' : 'display:none'}"
+             class="layui-form-item" id="correctValueDiv">
+            <label for="correctValue" class="layui-form-label">
+                <span class="x-red">*</span>正确选项
+            </label>
+            <div class="layui-input-inline">
+                <input type="text" id="correctValue" name="correctValue" autocomplete="off" class="layui-input"
+                       th:value="${measurementItemField.correctValue}" value="">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label for="name" class="layui-form-label">
+                <span class="x-red">*</span>工时
+            </label>
+            <div class="layui-input-inline">
+                <input type="number" id="manHour" name="manHour" value="0" required lay-verify="required"
+                       autocomplete="off" class="layui-input" th:value="${measurementItemField.manHour}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label for="name" class="layui-form-label">
+                描述
+            </label>
+            <div class="layui-input-inline">
+                <input type="text" id="description" name="description" autocomplete="off" class="layui-input"
+                       th:value="${measurementItemField.description}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label for="name" class="layui-form-label">
+                备注
+            </label>
+            <div class="layui-input-inline">
+                <input type="text" id="remark" name="remark" autocomplete="off" class="layui-input" th:value="${measurementItemField.remark}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <button class="layui-btn" lay-submit="" lay-filter="add">增加</button>
+        </div>
+    </form>
+</div>
+<script>
+    let measurementUnits = [];
+
+    layui.use(['form', 'layer'], function () {
+        $ = layui.jquery;
+        var form = layui.form
+            , layer = layui.layer;
+
+        form.on('select()', function (data) {
+            measurementUnitGroupNameLinkage(data.elem);
+            deviceMeasurementItemIdLinkage(data.elem);
+            measurementUnitValueTypeLinkage(data.elem);
+        });
+
+        //监听提交
+        form.on('submit(add)', function (data) {
+            $.ajax({
+                url: '/backstage/measurementItemFiled/saveOrUpdate',
+                type: 'post',
+                data: $('#railway-line-info-form').serialize(),
+                dataType: 'json',
+                success: function (result) {
+                    console.log(result);
+                    if (!result.success) {
+                        alert(result.msg);
+                        return false;
+                    }
+
+                    layer.alert("提交成功", {icon: 6}, function () {
+                        // 获得frame索引
+                        const index = parent.layer.getFrameIndex(window.name);
+                        parent.location.reload();
+                        //关闭当前frame
+                        parent.layer.close(index);
+                    });
+                }
+            });
+
+            return false;
+        });
+    });
+
+    // 设备测量字段关联单位分组，测量单位，名称和单位名称
+    function deviceMeasurementItemIdLinkage(e) {
+        if ($(e).attr('id') !== 'deviceMeasurementItemId')
+            return;
+
+        let deviceMeasurementItemId = $(e).val();
+        if (!deviceMeasurementItemId) {
+            window.location.reload();
+            return;
+        }
+
+        $('#measurementUnitGroupName').html('<option value="">直接选择或搜索选择</option>');
+        $('#measurementUnitId').html('<option value="">直接选择或搜索选择</option>');
+
+        layui.form.render("select");//重新渲染 固定写法
+
+        $.ajax({
+            url: '/client/deviceMeasurementItem/getById',
+            type: 'post',
+            data: {
+                id: deviceMeasurementItemId
+            },
+            dataType: 'json',
+            success: function (result) {
+                if (!result.success) {
+                    alert(result.msg);
+                    return false;
+                }
+
+                let deviceMeasurementItem = result.obj;
+                let measurementUnit = deviceMeasurementItem.measurementUnit;
+
+                $('#measurementUnitGroupName').html('');
+                $('#measurementUnitGroupName').append('<option value="' + measurementUnit.groupName + '">' + measurementUnit.groupName + '</option>');
+                $('#measurementUnitGroupName').val(measurementUnit.groupName);
+                $('#measurementUnitId').html('');
+                $('#measurementUnitId').append('<option value="' + measurementUnit.id + '">' + measurementUnit.name + '</option>');
+                $('#measurementUnitId').val(measurementUnit.id);
+                $('#name').val(deviceMeasurementItem.name);
+                $('#unitName').val(measurementUnit.unitName);
+                let valueType = measurementUnit.valueType;
+                console.log(256);
+                console.log(valueType);
+                if (valueType === 0) {
+                    $('#maxValueDiv').show();
+                    $('#minValueDiv').show();
+                    $('#correctValueDiv').hide();
+                }
+                if (valueType === 1) {
+                    $('#maxValueDiv').hide();
+                    $('#minValueDiv').hide();
+                    $('#correctValueDiv').show();
+                }
+
+                layui.form.render("select");//重新渲染 固定写法
+            }
+        });
+    }
+
+    // 选择测量单位后，隐藏最大/最小值或正确选项
+    function measurementUnitValueTypeLinkage(e) {
+        const id = $(e).attr('id');
+
+        if (id !== 'measurementUnitId')
+            return;
+
+        let measurementUnitId = $(e).val();
+        let choosenValueType;
+        $.each(measurementUnits, function (i, measurementUnit) {
+            console.log(measurementUnit.id);
+            if (measurementUnitId === measurementUnit.id)
+                choosenValueType = measurementUnit.valueType;
+        });
+        console.log(256);
+        console.log(choosenValueType);
+        if (choosenValueType === 0) {
+            $('#maxValueDiv').show();
+            $('#minValueDiv').show();
+            $('#correctValueDiv').hide();
+        }
+        if (choosenValueType === 1) {
+            $('#maxValueDiv').hide();
+            $('#minValueDiv').hide();
+            $('#correctValueDiv').show();
+        }
+    }
+
+    // 选择单位分组后，加载测量单位list
+    function measurementUnitGroupNameLinkage(e) {
+        const id = $(e).attr('id');
+
+        if (id !== 'measurementUnitGroupName')
+            return;
+
+        $('#measurementUnitId').html('<option value="">直接选择或搜索选择</option>');
+        layui.form.render("select");//重新渲染 固定写法
+
+        $.ajax({
+            url: '/client/measurementUnitClient/getMeasurementUnitsByGroupName',
+            type: 'post',
+            data: 'groupName=' + $(e).val(),
+            dataType: 'json',
+            success: function (result) {
+                console.log(result);
+
+                if (!result.success) {
+                    alert(result.msg);
+                    return false;
+                }
+                measurementUnits = result.obj;
+
+                $('#measurementUnitId').html('');
+                $('#measurementUnitId').append('<option value="">直接选择或搜索选择</option>');
+                $.each(result.obj, function (i, val) {
+                    $('#measurementUnitId').append('<option value="' + val.id + '">' + val.name + '</option>')
+                });
+
+                layui.form.render("select");//重新渲染 固定写法
+            }
+        });
+    }
+</script>
+</body>
+
+</html>

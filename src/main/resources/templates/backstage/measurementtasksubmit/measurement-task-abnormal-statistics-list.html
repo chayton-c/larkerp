@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-L-admin1.0</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+    <script src="/js/util.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="/js/template/html5shiv.r29.html5.min.js"></script>
+    <script src="/js/template/respond-1.4.2.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+<div class="x-nav">
+    <a class="layui-btn layui-btn-primary layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right"
+       href="javascript:location.replace(location.href);" title="刷新">
+        <i class="layui-icon" style="line-height:38px">ဂ</i></a>
+</div>
+<div class="x-body">
+    <div class="layui-row">
+        <form class="layui-form layui-col-md12 x-so" id="backstage-line-form">
+            <input type="hidden" name="pageSize" th:value="${page.pageSize}"/>
+            <input type="hidden" name="currentPage"/>
+            <div class="layui-input-inline">
+                <input type="text" name="stationName" id="stationId" placeholder="请输区域名称" autocomplete="off"
+                       class="layui-input"
+                       th:value="${pageMeasurementTaskDetail.stationName}">
+            </div>
+            <div class="layui-input-inline">
+                <select lay-search="" id="deviceInfo" name="deviceId">
+                    <option value="">选择或搜索设备名</option>
+                    <option th:each="device, iterStat : ${devices}" th:value="${device.id}" th:text="${device.name}" th:selected="${pageMeasurementTaskDetail.deviceId == device.id}">
+                        设备名
+                    </option>
+                </select>
+            </div>
+
+            <div class="layui-inline"> <!-- 注意：这一层元素并不是必须的 -->
+                <input type="text" class="layui-input laydate" name="startTime" placeholder="请输起始时间" autocomplete="off" th:value="${pageMeasurementTaskDetail.startTime}">
+            </div>
+            <div class="layui-inline"> <!-- 注意：这一层元素并不是必须的 -->
+                <input type="text" class="layui-input laydate" name="endTime" placeholder="请输结束时间" autocomplete="off" th:value="${pageMeasurementTaskDetail.endTime}">
+            </div>
+            <button class="layui-btn" lay-submit="" lay-filter="sreach"><i class="layui-icon">&#xe615;</i></button>
+            <button class="layui-btn" onclick="cleanSreach()">清空</button>
+
+
+        </form>
+        <xblock>
+            <button type="button" class="layui-btn" onclick="hideKids()"><i class="layui-icon"></i>收起区间</button>
+        </xblock>
+    </div>
+    <!--    <xblock>-->
+    <!--        <button class="layui-btn layui-btn-danger" onclick="delAll()"><i class="layui-icon"></i>批量删除</button>-->
+    <!--    </xblock>-->
+    <table class="layui-table layui-form">
+        <thead>
+        <tr>
+            <th width="20">
+                <div class="layui-unselect header layui-form-checkbox" lay-skin="primary"><i
+                        class="layui-icon">&#xe605;</i></div>
+            </th>
+            <th>任务名</th>
+            <th>执行人</th>
+            <th>测量模板</th>
+            <th>厂区</th>
+            <th>区域</th>
+            <th>设备类型</th>
+            <th>处理时间</th>
+            <th width="480">操作</th>
+        </thead>
+        <tbody class="x-cate">
+        <!--/*@thymesVar id="measurementTaskPojo" type="com.yingda.lkj.beans.pojo.measurement.MeasurementTaskPojo"*/-->
+        <!--/*@thymesVar id="measurementTaskPojos" type="java.util.ArrayList"*/-->
+        <div th:each="measurementTaskPojo,iterStat : ${measurementTaskPojos}">
+            <tr th:cate-id='${measurementTaskPojo.id}' th:fid='${measurementTaskPojo.parentId}'>
+                <td>
+                    <div class="layui-unselect layui-form-checkbox" lay-skin="primary"
+                         th:data-id='${measurementTaskPojo.id}'><i class="layui-icon">&#xe605;</i>
+                    </div>
+                </td>
+                <td>
+                    <i th:if="${measurementTaskPojo.level == 1}" class="layui-icon x-show" status='true'>&#xe623;</i>
+                    <span th:if="${measurementTaskPojo.level == 2}">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span th:text="${measurementTaskPojo.name}">任务名</span>
+                </td>
+                <td>
+                    <span th:text="${measurementTaskPojo.executeUserName}">执行人</span>
+                </td>
+                <td>
+                    <span th:text="${measurementTaskPojo.templateName}">测量模板</span>
+                </td>
+
+                <td>
+                    <span th:text="${measurementTaskPojo.railwayLineName}">厂区</span>
+                </td>
+                <td>
+                    <span th:text="${measurementTaskPojo.stationName}">区域</span>
+                </td>
+                <td>
+                    <span th:text="${measurementTaskPojo.deviceName}">设备类型</span>
+                </td>
+                <td>
+                    <span th:text="${measurementTaskPojo.executeTime}">提交时间</span>
+                </td>
+                <td class="td-manage">
+                    <!-- 一级节点(厂区)和二级节点(区间)的编辑页面不同 -->
+
+                    <button th:if="${measurementTaskPojo.level == 2}" th:data-id="${measurementTaskPojo.id}"
+                            th:data-measurementTaskId="${measurementTaskPojo.parentId}"
+                            class="layui-btn layui-btn layui-btn-xs"
+                            onclick="x_admin_show('查看', '/backstage/measurementItemFieldValue/fieldList'
+                                                            + '?measurementTaskDetailId=' + this.getAttribute('data-id'))">
+                        <i class="layui-icon">&#xe642;</i>
+                        查看
+                    </button>
+                </td>
+            </tr>
+
+        </div>
+        </tbody>
+    </table>
+    <div th:include="/common/page::page('backstage-line-form')"></div>
+</div>
+<script>
+
+    layui.use(['form', 'upload', 'laydate'], function () {
+        const $ = layui.jquery
+            , upload = layui.upload
+            , laydate = layui.laydate;
+
+        //指定允许上传的文件类型
+        upload.render({
+            elem: '#import-lines'
+            , url: '/backstage/line/importLines'
+            , accept: 'file' //普通文件
+            , done: function (res) {
+                if (!res.isSuccess)
+                    alert(res.msg);
+                $('#find').click();
+            }
+        });
+
+        //日期插件
+        $(".laydate").each(function(){
+            laydate.render({
+                elem: this, //指定元素  表示当前的元素
+            });
+        })
+
+    });
+
+    function cleanSreach() {
+        $('#stationId').val('');
+        $('#deviceInfo').empty();
+        $('.laydate').val('');
+    }
+
+    function submitTask(e) {
+        const measurementTaskId = $(e).attr('data-id');
+
+        $.ajax({
+            url: '/backstage/measurementTaskSubmit/submit',
+            type: 'get',
+            data: {
+                measurementTaskId: measurementTaskId,
+            },
+            dataType: 'json',
+            success: function (result) {
+                console.log(result);
+                if (!result.success) {
+                    alert(result.msg);
+                    return false;
+                }
+
+                location.reload();
+            }
+        })
+    }
+
+    function closeTask(e) {
+        const measurementTaskId = $(e).attr('data-id');
+
+        $.ajax({
+            url: '/backstage/measurementTaskSubmit/close',
+            type: 'get',
+            data: {
+                measurementTaskId: measurementTaskId,
+            },
+            dataType: 'json',
+            success: function (result) {
+                console.log(result);
+                if (!result.success) {
+                    alert(result.msg);
+                    return false;
+                }
+
+                location.reload();
+            }
+        })
+    }
+
+    function executeTask(e) {
+        const measurementTaskId = $(e).attr('data-id');
+
+        $.ajax({
+            url: '/backstage/measurementTaskHandle/execute',
+            type: 'get',
+            data: {
+                measurementTaskId: measurementTaskId,
+            },
+            dataType: 'json',
+            success: function (result) {
+                console.log(result);
+                if (!result.success) {
+                    alert(result.msg);
+                    return false;
+                }
+
+                location.reload();
+            }
+        })
+    }
+</script>
+</body>
+
+</html>

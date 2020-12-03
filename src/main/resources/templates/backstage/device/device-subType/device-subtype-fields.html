@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-L-admin1.0</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script type="text/javascript" src="/js/jquery.min.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/lib/layui/lay/modules/laypage.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="/js/template/html5shiv.r29.html5.min.js"></script>
+    <script src="/js/template/respond-1.4.2.min.js"></script>
+    <![endif]-->
+</head>
+
+<body class="layui-anim layui-anim-up">
+
+<div class="x-body">
+    <div class="layui-row">
+        <form class="layui-form layui-col-md12 x-so" id="backstage-device-form">
+            <input type="hidden" name="pageSize" th:value="${page.pageSize}"/>
+            <input type="hidden" name="currentPage"/>
+            <input type="hidden" name="deviceTypeId" th:value="${deviceTypeId}"/>
+
+            <div class="layui-input-inline">
+                <select name="hideStr" lay-search="">
+                    <option value="">显示/隐藏</option>
+                    <option value="0" th:selected="${hideStr == '0'}">显示</option>
+                    <option value="1" th:selected="${hideStr == '1'}">隐藏</option>
+                </select>
+            </div>
+
+            <input type="text"
+                   name="fileName" placeholder="请输入子类型名称"
+                   autocomplete="off" class="layui-input" th:value="${fileName}">
+
+            <button class="layui-btn" lay-submit="" lay-filter="sreach"><i class="layui-icon">&#xe615;</i></button>
+            <a title="添加子类型" th:data-id="${deviceTypeId}" class="layui-btn"
+               onclick="x_admin_show('添加子类型','/backstage/deviceType/addDeviceSubTypeInfo?deviceTypeId=' + this.getAttribute('data-id') , 500, 150)"
+               href="javascript:;">
+                添加子类型
+            </a>
+        </form>
+    </div>
+    <table class="layui-table">
+        <thead>
+        <tr>
+            <th>子类型名称</th>
+            <th>加入时间</th>
+            <th>状态</th>
+            <th style="width: 50px;">操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="deviceSubType, iterstart : ${deviceSubTypes}">
+            <td th:text="${deviceSubType.name}">子类型名称</td>
+            <td th:text="${deviceSubType.addTime}">加入时间</td>
+            <div>
+                <td th:if="${deviceSubType.hide == 0}">显示</td>
+                <td th:if="${deviceSubType.hide == 1}">隐藏</td>
+            </div>
+            <td>
+                <a title="编辑" th:data-id="${deviceSubType.id}" class="layui-btn"
+                   onclick="x_admin_show('编辑子类型信息','/backstage/deviceType/updateDeviceSubTypeInfo?id=' + this.getAttribute('data-id') , 500, 300)"
+                   href="javascript:;">
+                    编辑
+                </a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <div th:include="/common/page::page('backstage-device-form')"></div>
+</div>
+<div id="qrcode" style="display:none"></div>
+<a id="download" download="qrcode.jpg" style="display:none"></a>
+<button id="save" style="display:none">save</button>
+<script type="text/javascript" src="/js/qrcode/device-qrcode.js"></script>
+<script type="text/javascript" src="/js/zip/zip.js"></script>
+<script th:inline="javascript">
+
+
+</script>
+</body>
+
+</html>

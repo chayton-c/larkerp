@@ -1,0 +1,90 @@
+[
+  {
+    "id": "fc9a9ac8-6f28-448e-ae50-70912f945a45",
+    "name": "哈尔滨北综合场XN信号机",
+    "type_info": "信号机",
+    "last_test_time": "2019/12/30 12:00:00",
+    "line_name": "哈牡线",
+    "station_name": "牡丹江站",
+    "remark": "备注",
+    "maintenance_template": [ // 测试模板
+      {
+        "id": "728328d8-406a-4ff9-9f21-b6752fad94d7",
+        "name": "电气特性测试表模板",
+        "maintenance_item": [ // 测试项list
+          {
+            "id": "338328d8-406a-4ff9-9f21-b6752fad94d7",
+            "name": "L灯",
+            "maintenance_point_ids": [ // 测试点list,关联测试点list.json
+              "828328d8-406a-4ff9-9f21-b6752fad94d7", "7c08e53d-d941-471a-894b-318780607cbb"
+            ],
+          },
+          {
+            "id": "12b20a28-fdcd-401d-8a17-3ab9fcd8c40e",
+            "name": "R灯",
+            "maintenance_point_ids": [
+              "828328d8-406a-4ff9-9f21-b6752fad94d7", "7c08e53d-d941-471a-894b-318780607cbb"
+            ],
+          }
+        ]
+      },
+      {
+        "id": "128328d8-406a-4ff9-9f21-b6752fad94d7",
+        "name": "点灯电流测试表模版",
+        "maintenance_item": [
+          {
+            "id": "18145eda-2412-42b6-b026-eb9beb9a798e",
+            "name": "点灯电流",
+            "maintenance_point_ids": [
+              "02e3c9e1-d2d6-4069-951f-241b85bea9c7"
+            ],
+          }
+        ],
+        "remark": "",
+      }
+    ],
+    "maintenance_record": [
+      { // "电气特性测试表模板", "L灯" 的记录
+        "id": "32f387a9-2aec-46f7-a102-0cffadc4c6fc",
+        "maintenance_item_id": "338328d8-406a-4ff9-9f21-b6752fad94d7",
+        "test_time": "2019/12/30 12:00:00",
+        "values": [
+          { // "绿灯#交流电流" "基础电气参数(万用表) 交流电压"
+            "id": "828328d8-406a-4ff9-9f21-b6752fad94d7",
+            "value": "3.2"
+          },
+          { // "红灯#交流电流" "ZPW-2000测试项 载频选频测量-电压 1700 电压"
+            "id": "7c08e53d-d941-471a-894b-318780607cbb",
+            "value": "3.6"
+          }
+        ]
+      },
+      { // "电气特性测试表模板", "R灯" 的记录
+        "id": "4fdee839-32e4-4685-80f7-7e4980605a29",
+        "maintenance_item_id": "12b20a28-fdcd-401d-8a17-3ab9fcd8c40e",
+        "test_time": "2019/12/30 12:00:00",
+        "values": [
+          { // "绿灯#交流电流" "基础电气参数(万用表) 交流电压"
+            "id": "828328d8-406a-4ff9-9f21-b6752fad94d7",
+            "value": "3.3"
+          },
+          { // "红灯#交流电流" "ZPW-2000测试项 载频选频测量-电压 1700 电压"
+            "id": "7c08e53d-d941-471a-894b-318780607cbb",
+            "value": "3.7"
+          }
+        ]
+      },
+      {
+        "id": "18145eda-2412-42b6-b026-eb9beb9a798e",
+        "maintenance_item_id": "02e3c9e1-d2d6-4069-951f-241b85bea9c7",
+        "test_time": "2019/12/31 12:00:00",
+        "values": [
+          { // "L灯电流(mA)" "ZPW-1000测试项 载频选频测量-电压 1600 电压"
+            "id": "02e3c9e1-d2d6-4069-951f-241b85bea9c7",
+            "value": "17"
+          }
+        ]
+      }
+    ]
+  },
+]

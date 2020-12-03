@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>建设匈牙利</title>
+</head>
+
+<body>
+<div th:fragment="page(formId)">
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/lib/layui/lay/modules/laypage.js" charset="utf-8"></script>
+    <div id="user-page">
+    </div>
+    <script th:inline="javascript">
+
+        $(document).ready(function() {
+
+            layui.use('laypage', function () {
+                const laypage = layui.laypage;
+
+                laypage.render({
+                    elem: 'user-page',
+                    count: [[${page.dataTotal}]],
+                    curr: [[${page.currentPage}]],
+                    limit: [[${page.pageSize}]],
+                    limits: [1, 5, 10, 20, 50],
+                    layout: ['count', 'prev', 'page', 'next', 'limit', 'refresh', 'skip'],
+                    jump: function (obj, first) {
+                        if (!first) {
+                            const form = $('#' + [[${formId}]]);
+
+                            if (!form)
+                                alert('找不到 id 为 ' + [[${formId}]] + ' 的form');
+
+                            const currentPageInput = $('#' + [[${formId}]] + ' input[name="currentPage"]');
+                            const pageSizeInput = $('#' + [[${formId}]] + ' input[name="pageSize"]');
+
+                            if (!currentPageInput || !pageSizeInput)
+                                alert('找不到 form : ' + [[${formId}]] + ' 下的 name = dataTotal 或 name = currentPage 的表单')
+
+                            $(pageSizeInput).val(obj.limit);
+                            $(currentPageInput).val(obj.curr);
+
+                            $('#' + [[${formId}]] + ' button').click();
+                        }
+                    },
+                    theme: '#42b8f1'
+                })
+            });
+        })
+
+    </script>
+</div>
+</body>
+
+</html>

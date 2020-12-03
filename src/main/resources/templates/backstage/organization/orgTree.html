@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-L-admin1.0</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="/js/template/html5shiv.r29.html5.min.js"></script>
+    <script src="/js/template/respond-1.4.2.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+
+
+<!--<div style="border:1px solid; left: auto;height: 100%; width: 100%">-->
+<!--    <div id="demo"></div>-->
+<!--</div>-->
+<div class="x-nav">
+    <a class="layui-btn layui-btn-primary layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right"
+       href="javascript:location.replace(location.href);" title="刷新">
+        <i class="layui-icon" style="line-height:38px">ဂ</i></a>
+</div>
+
+<div style='width:200px;float:left;height:810px;'>
+    <div id="demo"></div>
+</div>
+<div style='width:1px;border:1px solid ;float:left;height:830px;'><!--这个div模拟一条垂直分割线--></div>
+
+<div style='width:1458px;float:left;height:830px; margin-top: -10px; display: inline-block'>
+
+    <table id="parentTable" lay-filter="orgButton"></table>
+    <table id="childrenTable" lay-filter="anniu"></table>
+
+</div>
+
+<!-- 用户 toolbar 模板 -->
+<script type="text/html" id="export">
+    <div class='layui-btn' style="height: 30px; line-height: 30px" onclick="x_admin_show('添加用户', '/backstage/user/addPage', 800, 560)" >添加用户</div>
+    <div class='layui-btn' style="height: 30px; line-height: 30px" lay-submit lay-filter="exportUsers"> 导出用户</div>
+</script>
+
+<!-- 组织 toolbar 模板 -->
+<script type="text/html" id="addOrg">
+    <div class='layui-btn' style="height: 30px; line-height: 30px" onclick="x_admin_show('添加部门', '/backstage/organization/info', 800, 560)"><i class="layui-icon"></i>添加</div>
+</script>
+
+<script>
+
+    // 初始化  树
+    $(function () {
+        $.ajax({
+            type: 'post'
+            , url: '/backstage/tree/testTree'
+            , dataType: 'json'
+            , success: function (data) {
+                layui.use(['tree', 'layer'], function () {
+                    layui.tree({
+                        elem: '#demo'
+                        , nodes: convert(data)
+                        , click: function (node) { //node 被点击节点的信息
+                            console.log(node);
+                            nodeMethod(data, node);
+                        }
+                    });
+                });
+                console.log(data);
+                let node = [];
+                const orgInfo = data.obj
+                for (let i = 0; i<orgInfo.length; i++){
+                    if (orgInfo.parentId == 0){
+                        node = orgInfo[i];
+                    }
+                }
+                if (orgInfo.length>0)
+                    node=orgInfo[0];
+                console.log(node);
+                nodeMethod(data, node);
+            }
+
+        });
+
+    });
+
+    //遍历父节点
+    function convert(data) {
+        let nodes = [];
+        const orgList = data.obj;
+        for (let i = 0; i < orgList.length; i++) {
+            let orgObj = orgList[i];
+            let level = orgObj.level;
+            if (level == 1) {
+                nodes.push({
+                    id: orgObj.id
+                    , name: orgObj.name
+                    , level: orgObj.level
+                    , children: childrenConvert(orgList, orgObj.id)
+                })
+            }
+        }
+        return nodes;
+    }
+
+    //遍历子节点
+    function childrenConvert(orgList, id) {
+        let childrens = [];
+        for (let i = 0; i < orgList.length; i++) {
+            if (orgList[i].parentId == id) {
+                let orgObj = orgList[i];
+                childrens.push({
+                    id: orgObj.id
+                    , name: orgObj.name
+                    , level: orgObj.level
+                    , children: childrenConvert(orgList, orgObj.id)
+                })
+            }
+
+        }
+        return childrens;
+    }
+
+    //操作节点信息
+    function nodeMethod(data, node) {
+        const orgList = data.obj;
+        const nodeId = node.id; //当前节点id
+        const nodeLevel = node.level;//当前节点 等级
+
+        for (let i = 0; i < orgList.length; i++) {
+            layui.use(['table', 'form', 'upload'], function () {
+                let table = layui.table
+                    , form = layui.form
+                    , upload = layui.upload;
+                //追加 父级 table
+                if (nodeId == orgList[i].id) {
+                    table.render({
+                        elem: '#parentTable',
+                        url: '/backstage/tree/parentInfo',
+                        height: 390,
+                        toolbar: "#addOrg",
+                        cols: [
+                            [ //表头
+                                {field: 'name', title: '名称', width: 250, sort: true, fixed: 'left', templet: function(d) {
+                                        return d.name;
+                                    }},
+                                {field: 'shortName', title: '简称', width: 250, edit: 'text'},
+                                {field: 'code', title: '编码', width: 148, sort: true},
+                                {field: 'hide', title: '状态', width: 100, templet:function (d) {
+                                        if (d.hide == 0){
+                                            return "显示"
+                                        }
+                                        return "隐藏"
+                                    }},
+                                {field: 'description', title: '描述', width: 287},
+                                {field: 'id', fixed: 'right', title: '操作', width: 415, align: 'center', templet: function (d) {
+                                        let id = d.id;
+                                        return "<div class='layui-btn layui-btn layui-btn-xs' data-id='" + id + "' " +
+                                            "onclick=\"x_admin_show('编辑', '/backstage/organization/info?id='+ this.getAttribute('data-id'), 800, 560)\" >" +
+                                            "<i class='layui-icon'>&#xe642;</i> 编辑 </div> " +
+
+                                            "<div class='layui-btn layui-btn-warm layui-btn-xs' data-id='" + id + "' " +
+                                            "onclick=\"x_admin_show('添加下级部门', '/backstage/organization/info?parentId='+ this.getAttribute('data-id'), 800, 560) \">" +
+                                            "<i class=\"layui-icon\">&#xe642;</i> 添加下级部门 </div>" +
+
+                                            "<button data-id='" + id + "' data-has-slave ='"+d.hasSlave+"' onclick=\"member_del(this)\" href='javascript:;' class='layui-btn-danger layui-btn layui-btn-xs'><i class='layui-icon'>&#xe640;</i>隐藏</button> "
+                                    }
+                                }
+                            ]
+                        ],
+                        where: {
+                            nodeId: nodeId
+                        },
+                        page: true   //开启分页
+                        ,
+                        limit: 10   //默认十条数据一页
+                        ,
+                        limits: [10, 20, 30, 50]  //数据分页条
+                    });
+                }
+
+                //追加 子级 table
+                if (nodeId == orgList[i].parentId) {
+                    table.render({
+                        elem: '#childrenTable'
+                        , url: '/backstage/tree/childrenInfo'
+                        , height: 390
+                        , page: true   //开启分页
+                        , limit: 10   //默认十条数据一页
+                        , limits: [10, 20, 30, 50]  //数据分页条
+                        , where: {
+                            nodeId: nodeId
+                        }
+                        ,cols: [
+                            [ //表头
+                                {field: 'name', title: '名称', width: 250, sort: true, fixed: 'left', templet: function(d) {
+                                        return d.name;
+                                    }},
+                                {field: 'shortName', title: '简称', width: 250, edit: 'text'},
+                                {field: 'code', title: '编码', width: 148, sort: true},
+                                {field: 'hide', title: '状态', width: 100, templet:function (d) {
+                                        if (d.hide == 0){
+                                            return "显示"
+                                        }
+                                        return "隐藏"
+                                    }},
+                                {field: 'description', title: '描述', width: 287},
+                                {field: 'id', fixed: 'right', title: '操作', width: 415, align: 'center', templet: function (d) {
+                                        let id = d.id;
+                                        return "<div class='layui-btn layui-btn layui-btn-xs' data-id='"+id+"' " +
+                                            "onclick=\"x_admin_show('编辑', '/backstage/organization/info?id='+ this.getAttribute('data-id'), 800, 560)\" >" +
+                                            "<i class='layui-icon'>&#xe642;</i> 编辑 </div> " +
+
+                                            "<div class='layui-btn layui-btn-warm layui-btn-xs' data-id='"+id+"' " +
+                                            "onclick=\"x_admin_show('添加下级部门', '/backstage/organization/info?parentId='+ this.getAttribute('data-id'), 800, 560) \">" +
+                                            "<i class=\"layui-icon\">&#xe642;</i> 添加下级部门 </div>" +
+
+                                            "<button data-id='"+id+"' data-has-slave ='"+d.hasSlave+"' onclick=\"member_del(this)\" href='javascript:;' class='layui-btn-danger layui-btn layui-btn-xs'><i class='layui-icon'>&#xe640;</i>隐藏</button> "
+                                    }
+                                }
+                            ]
+                        ],
+
+                    })
+                }
+
+                //追加 用户 table
+                if (nodeLevel == 4) {
+                    table.render({
+                        elem: '#childrenTable'
+                        , url: '/backstage/tree/childrenStudentInfo'
+                        , height: 390
+                        , page: true   //开启分页
+                        , limit: 10   //默认十条数据一页
+                        , limits: [10, 20, 30, 50]  //数据分页条
+                        , where: {
+                            nodeId: nodeId
+                        }
+                        ,toolbar: '#export' //开启头部工具栏，并为其绑定左侧模板
+                        , cols: [
+                            [ //表头
+                                {field: 'userName', title: '用户名', width: 215, sort: true, fixed: 'left'}
+                                , {field: 'displayName', title: '显示姓名', width: 215}
+                                , {field: 'sectionName', title: '部门', width: 210}
+                                , {field: 'workshopName', title: '车间', width: 210}
+                                , {field: 'workAreaName', title: '工区', width: 200}
+                                , {field: 'roleName', title: '职位', width: 200}
+                                , {field: 'id',fixed: 'right',title: '操作',width: 210,align: 'center',templet: function (d) {
+                                    let id = d.id;
+                                    return "<div class='layui-btn layui-btn layui-btn-xs' data-id='" + id + "' " +
+                                        "onclick=\"x_admin_show('编辑', '/backstage/user/infoPage?id=' + this.getAttribute('data-id'), 800, 560)\" >" +
+                                        "<i class='layui-icon'>&#xe642;</i> 编辑 </div> "
+                                }
+                            }
+                            ]
+                        ]
+
+                    })
+                }
+
+                //导出用户
+                form.on('submit(exportUsers)', function (data) {
+
+                    const params = data.field;
+
+                    let workshopId = params.workshopId;
+                    let workAreaId = params.workAreaId;
+                    let displayName = params.displayName;
+                    window.location.href = '/backstage/user/exportUsers?workshopId=' + workshopId + '&workAreaId='+workAreaId + '&displayName=' + displayName;
+                });
+
+                //导入用户
+                const importLkj = upload.render({
+                    elem: '#importUser',
+                    url: '/backstage/user/importUsers',
+                    accept: 'file', //普通文件
+                    done: function (result) {
+                        if (!result.success) {
+                            layer.msg(result.msg);
+                            return false;
+                        }
+
+                        layer.alert("增加成功", {icon: 6},function () {
+                            // 获得frame索引
+                            window.location.reload();
+                        });
+                    },
+                    error: function () {
+                        //演示失败状态，并实现重传
+                        const demoText = $('#demoText');
+                        demoText.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-xs demo-reload">重试</a>');
+                        demoText.find('.demo-reload').on('click', function () {
+                            importLkj.upload();
+                        });
+                    }
+                });
+
+
+
+                //添加测试
+                form.on('submit(addOrg)', function (e) {
+                    alert(111);
+                })
+
+
+
+            });
+
+
+        }
+
+    }
+
+    //隐藏函数
+    function member_del(obj) {
+        const id = obj.getAttribute('data-id');
+        let hasSlave = obj.getAttribute('data-has-slave');
+        hasSlave = eval(hasSlave.toLowerCase());
+
+        if (hasSlave) {
+            layer.msg('请先隐藏下级节点!', {icon: 2, time: 3000});
+            return;
+        }
+
+        $.ajax({
+            url: '/backstage/organization/delete',
+            type: 'get',
+            data: {
+                ids: id,
+            },
+            dataType: 'json',
+            success: function (result) {
+                if (!result.success) {
+                    layer.alert(result.msg);
+                    return false;
+                }
+                layer.msg('提交成功!', {icon: 1, time: 1000});
+
+                //发异步删除数据
+                window.location.reload();
+                // $(obj).parents("tr").remove();
+                // $('#' + parentId).attr('data-has-slave', 'false')
+            }
+        })
+    }
+
+
+
+
+</script>
+
+</body>
+
+
+</html>

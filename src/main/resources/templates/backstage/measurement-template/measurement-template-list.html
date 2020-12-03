@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-L-admin1.0</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+    <script src="/js/util.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="/js/template/html5shiv.r29.html5.min.js"></script>
+    <script src="/js/template/respond-1.4.2.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+<div class="x-nav">
+    <a class="layui-btn layui-btn-primary layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right"
+       href="javascript:location.replace(location.href);" title="刷新">
+        <i class="layui-icon" style="line-height:38px">ဂ</i></a>
+</div>
+<div class="x-body">
+    <div class="layui-row">
+        <form class="layui-form layui-col-md12 x-so" id="backstage-line-form">
+            <!--/*@thymesVar id="page" type="com.yingda.lkj.beans.system.Page"*/-->
+            <input type="hidden" name="pageSize" th:value="${page.pageSize}"/>
+            <input type="hidden" name="currentPage"/>
+            <input type="hidden" name="repairClass" th:value="${repairClass}"/>
+
+            <input type="text" name="name" placeholder="请输入模板名称" autocomplete="off" class="layui-input"
+                   th:value="${name}">
+
+            <div class="layui-input-inline">
+                <select name="deviceTypeId" lay-search="">
+                    <option value="">选择设备类型</option>
+                    <option th:each="deviceType, iterstart : ${deviceTypes}" th:value="${deviceType.id}" th:text="${deviceType.name}"
+                            th:selected="${deviceTypeId == deviceType.id}">设备名
+                    </option>
+                </select>
+            </div>
+            <button class="layui-btn" lay-submit="" lay-filter="sreach"><i class="layui-icon">&#xe615;</i></button>
+        </form>
+        <xblock>
+            <button th:if="${repairClass != null}" class="layui-btn"
+                    th:data-repairClass="${repairClass}"
+                    onclick="x_admin_show(
+                        '新建模板',
+                        '/backstage/measurementTemplate/measurementTemplateInfo?repairClass=' + this.getAttribute('data-repairClass'),
+                        1514, 500)">
+                <i class="layui-icon"></i>新建模板
+            </button>
+            <button th:if="${repairClass == null}" class="layui-btn"
+                    onclick="x_admin_show(
+                        '新建模板',
+                        '/backstage/measurementTemplate/measurementTemplateInfo',
+                        1514, 500)">
+                <i class="layui-icon"></i>新建模板
+            </button>
+            <button type="button" class="layui-btn" onclick="hideKids()"><i class="layui-icon"></i>收起全部</button>
+        </xblock>
+    </div>
+    <table class="layui-table layui-form">
+        <thead>
+        <tr>
+            <th width="20">
+                <div class="layui-unselect header layui-form-checkbox" lay-skin="primary"><i class="layui-icon">&#xe605;</i></div>
+            </th>
+            <th>模板名称</th>
+            <th width="80">修程</th>
+            <th>描述</th>
+            <th width="150">添加时间</th>
+            <th width="280">操作</th>
+        </thead>
+        <tbody class="x-cate">
+        <!--/*@thymesVar id="measurementTemplatePojo" type="com.yingda.lkj.beans.pojo.measurement.MeasurementTemplatePojo"*/-->
+        <!--/*@thymesVar id="measurementTemplatePojos" type="java.util.ArrayList"*/-->
+        <div th:each="measurementTemplatePojo,iterStat : ${measurementTemplatePojos}">
+            <tr th:cate-id='${measurementTemplatePojo.id}' th:fid='${measurementTemplatePojo.parentId}'>
+                <td>
+                    <div class="layui-unselect layui-form-checkbox" lay-skin="primary" th:data-id='${measurementTemplatePojo.id}'><i
+                            class="layui-icon">&#xe605;</i></div>
+                </td>
+                <td>
+                    <i th:if="${measurementTemplatePojo.level == 1}" class="layui-icon x-show" status='true'>&#xe623;</i>
+                    <span th:if="${measurementTemplatePojo.level == 2}">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span th:text="${measurementTemplatePojo.name}">模板名称</span>
+                </td>
+                <td>
+                    <span th:text="${measurementTemplatePojo.repairClass}">修程</span>
+                </td>
+                <td>
+                    <span th:text="${measurementTemplatePojo.description}">描述</span>
+                </td>
+                <td>
+                    <span th:text="${measurementTemplatePojo.addTime}">添加时间</span>
+                </td>
+                <td class="td-manage">
+                    <!-- 一级节点(厂区)和二级节点(区间)的编辑页面不同 -->
+                    <button th:if="${measurementTemplatePojo.level == 1}" th:data-id="${measurementTemplatePojo.id}" class="layui-btn layui-btn layui-btn-xs"
+                            onclick="x_admin_show('编辑', '/backstage/measurementTemplate/measurementTemplateInfo?measurementTemplageId='
+                                + this.getAttribute('data-id'), 1514, 500)">
+                        <i class="layui-icon">&#xe642;</i>
+                        编辑
+                    </button>
+
+                    <button th:if="${measurementTemplatePojo.level == 2}" th:data-id="${measurementTemplatePojo.id}"
+                            th:data-measurementTemplateId="${measurementTemplatePojo.parentId}"
+                            class="layui-btn layui-btn layui-btn-xs"
+                            onclick="x_admin_show('编辑', '/backstage/measurementTemplate/measuremenItemInfo?measuremenItemInfoId='
+                                + this.getAttribute('data-id') + '&measurementTemplateId=' + this.getAttribute('data-measurementTemplateId'), 800, 300)">
+                        <i class="layui-icon">&#xe642;</i>
+                        编辑
+                    </button>
+
+                    <button th:if="${measurementTemplatePojo.level == 1}" th:data-id="${measurementTemplatePojo.id}"
+                            class="layui-btn layui-btn-warm layui-btn-xs"
+                            onclick="x_admin_show('添加测量项', '/backstage/measurementTemplate/measuremenItemInfo?measurementTemplateId=' + this.getAttribute('data-id'), 1000,300)">
+                        <i class="layui-icon">&#xe642;</i>添加测量项
+                    </button>
+
+                    <button th:if="${measurementTemplatePojo.level == 2}" th:data-id="${measurementTemplatePojo.id}"
+                            th:data-measurementTemplateId="${measurementTemplatePojo.parentId}"
+                            class="layui-btn layui-btn layui-btn-xs"
+                            onclick="x_admin_show('编辑测量类型', '/backstage/measurementItemFiled?measurementItemId=' + this.getAttribute('data-id'))">
+                        <i class="layui-icon">&#xe642;</i>
+                        编辑测量类型
+                    </button>
+                </td>
+            </tr>
+
+        </div>
+        </tbody>
+    </table>
+    <div th:include="/common/page::page('backstage-line-form')"></div>
+</div>
+<script>
+    window.onload = function () {
+        $("tbody.x-cate tr[fid!='0']").hide();  //默认不展开 2级显示
+    }
+</script>
+
+</body>
+
+</html>

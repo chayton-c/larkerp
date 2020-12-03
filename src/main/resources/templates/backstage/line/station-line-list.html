@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-L-admin1.0</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+    <script src="/js/util.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="/js/template/html5shiv.r29.html5.min.js"></script>
+    <script src="/js/template/respond-1.4.2.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+<div class="x-nav">
+    <a class="layui-btn layui-btn-primary layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right"
+       href="javascript:location.replace(location.href);" title="刷新">
+        <i class="layui-icon" style="line-height:38px">ဂ</i></a>
+</div>
+<div class="x-body">
+    <div class="layui-row">
+        <form class="layui-form layui-col-md12 x-so" id="backstage-line-form">
+            <input type="hidden" name="pageSize" th:value="${page.pageSize}"/>
+            <input type="hidden" name="stationId" th:value="${stationId}"/>
+            <input type="hidden" name="currentPage"/>
+            <input type="text" name="lineName" placeholder="请输入厂区名" autocomplete="off" class="layui-input" th:value="${lineName}">
+            <input type="text" name="lineCode" placeholder="请输入线编码" autocomplete="off" class="layui-input" th:value="${lineCode}">
+            <input type="text" name="fragmentName" placeholder="请输入区间名称" autocomplete="off" class="layui-input" th:value="${fragmentName}">
+            <input type="text" name="fragmentCode" placeholder="请输入区间编码" autocomplete="off" class="layui-input" th:value="${fragmentCode}">
+            <button class="layui-btn" lay-submit="" lay-filter="sreach"><i class="layui-icon">&#xe615;</i></button>
+        </form>
+        <xblock>
+            <button class="layui-btn" th:data-stationId="${stationId}"
+                    onclick="linkageStationAndRailwayLine(this.getAttribute('data-stationId'))">
+                <i class="layui-icon"></i>关联厂区
+            </button>
+        </xblock>
+    </div>
+    <!--    <xblock>-->
+    <!--        <button class="layui-btn layui-btn-danger" onclick="delAll()"><i class="layui-icon"></i>批量删除</button>-->
+    <!--    </xblock>-->
+    <table class="layui-table layui-form">
+        <thead>
+        <tr>
+            <th width="20">
+                <div class="layui-unselect header layui-form-checkbox" lay-skin="primary"><i class="layui-icon">&#xe605;</i></div>
+            </th>
+            <th>厂区</th>
+            <th>电厂</th>
+            <th>编码</th>
+        </thead>
+        <tbody>
+        <div th:each="lineNodePojo,iterStat : ${lineNodePojos}">
+            <tr th:cate-id='${lineNodePojo.id}' th:fid='${lineNodePojo.parentId}'>
+                <td>
+                    <div class="layui-unselect layui-form-checkbox" lay-skin="primary"
+                         th:data-id='${lineNodePojo.id}'>
+                        <i class="layui-icon">&#xe605;</i>
+                    </div>
+                </td>
+                <td>
+                    <span th:text="${lineNodePojo.name}">厂区</span>
+                </td>
+                <td>
+                    <span th:text="${lineNodePojo.bureauName}">电厂</span>
+                </td>
+                <td>
+                    <span th:text="${lineNodePojo.code}">编码</span>
+                </td>
+            </tr>
+
+        </div>
+        </tbody>
+    </table>
+    <div th:include="/common/page::page('backstage-line-form')"></div>
+</div>
+<script>
+    function linkageStationAndRailwayLine(stationId) {
+        const railwayLineIds = tableCheck.getAttribute('id');
+
+        if (railwayLineIds.length === 0) {
+            layer.alert('请选择关联的厂区');
+            return;
+        }
+
+        $.ajax({
+            url: '/backstage/station/linkageStationAndRailwayLine',
+            type: 'post',
+            data: {
+                railwayLineIds : railwayLineIds.toString(),
+                stationId : stationId
+            },
+            dataType: 'json',
+            success: function (result) {
+                console.log(result);
+                if (!result.success) {
+                    layer.alert(result.msg);
+                    return false;
+                }
+
+                layer.alert("增加成功", {icon: 6}, function () {
+                    // 获得frame索引
+                    const index = parent.layer.getFrameIndex(window.name);
+                    parent.location.reload();
+                    //关闭当前frame
+                    parent.layer.close(index);
+                });
+            }
+        });
+
+    }
+
+    layui.use(['form', 'upload'], function () {
+        const $ = layui.jquery
+            , upload = layui.upload;
+
+        //指定允许上传的文件类型
+        upload.render({
+            elem: '#import-lines'
+            , url: '/backstage/line/importLines'
+            , accept: 'file' //普通文件
+            , done: function (res) {
+                if (!res.isSuccess)
+                    alert(res.msg);
+                $('#find').click();
+            }
+        });
+    });
+
+</script>
+</body>
+
+</html>

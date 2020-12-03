@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-L-admin1.0</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+    <script src="/js/util.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="/js/template/html5shiv.r29.html5.min.js"></script>
+    <script src="/js/template/respond-1.4.2.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+<div class="x-nav">
+    <a class="layui-btn layui-btn-primary layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right"
+       href="javascript:location.replace(location.href);" title="刷新">
+        <i class="layui-icon" style="line-height:38px">ဂ</i></a>
+</div>
+<div class="x-body">
+    <div class="layui-row">
+        <form class="layui-form layui-col-md12 x-so" id="backstage-line-form">
+            <input type="hidden" name="pageSize" th:value="${page.pageSize}"/>
+            <input type="hidden" name="currentPage"/>
+            <input type="text" name="lineName" placeholder="请输入厂区名" autocomplete="off" class="layui-input" th:value="${lineName}">
+            <input type="text" name="lineCode" placeholder="请输入线编码" autocomplete="off" class="layui-input" th:value="${lineCode}">
+            <input type="text" name="fragmentName" placeholder="请输入区间名称" autocomplete="off" class="layui-input" th:value="${fragmentName}">
+            <input type="text" name="fragmentCode" placeholder="请输入区间编码" autocomplete="off" class="layui-input" th:value="${fragmentCode}">
+            <button class="layui-btn" lay-submit="" lay-filter="sreach"><i class="layui-icon">&#xe615;</i></button>
+        </form>
+        <xblock>
+            <button class="layui-btn" onclick="x_admin_show('添加厂区','/backstage/line/railwayLineInfo', 800, 600)"><i class="layui-icon"></i>添加厂区</button>
+            <button type="button" class="layui-btn"
+                    onclick="x_admin_show('导入厂区','/backstage/line/importOrDownloadTemplate', 800, 600)">
+                <i class="layui-icon"></i>导入厂区
+            </button>
+<!--            <button type="button" class="layui-btn" onclick="hideKids()"><i class="layui-icon"></i>收起区间</button>-->
+        </xblock>
+    </div>
+    <!--    <xblock>-->
+    <!--        <button class="layui-btn layui-btn-danger" onclick="delAll()"><i class="layui-icon"></i>批量删除</button>-->
+    <!--    </xblock>-->
+    <table class="layui-table layui-form">
+        <thead>
+        <tr>
+            <th width="20">
+                <div class="layui-unselect header layui-form-checkbox" lay-skin="primary"><i class="layui-icon">&#xe605;</i></div>
+            </th>
+            <th>厂区</th>
+            <th>电厂</th>
+            <th>编码</th>
+            <th>类型</th>
+            <th width="50">排序</th>
+            <th width="280">操作</th>
+        </thead>
+        <tbody class="x-cate">
+        <div th:each="lineNodePojo,iterStat : ${lineNodePojos}">
+            <tr th:cate-id='${lineNodePojo.id}' th:fid='${lineNodePojo.parentId}'>
+                <td>
+                    <div class="layui-unselect layui-form-checkbox" lay-skin="primary" th:data-id='${lineNodePojo.id}'><i class="layui-icon">&#xe605;</i></div>
+                </td>
+                <td>
+                    <i th:if="${lineNodePojo.level == 1}" class="layui-icon x-show" status='true'>&#xe623;</i>
+                    <span th:if="${lineNodePojo.level == 2}">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span th:text="${lineNodePojo.name}">厂区</span>
+                </td>
+                <td>
+                    <span th:text="${lineNodePojo.bureauName}">电厂</span>
+                </td>
+                <td>
+                    <span th:text="${lineNodePojo.code}">编码</span>
+                </td>
+                <td>
+                    <span th:text="${lineNodePojo.typeInfo}">类型</span>
+                </td>
+                <td><input th:if="${lineNodePojo.level == 2}" type="text" th:data-id="${lineNodePojo.id}" class="layui-input x-sort" name="order"
+                           oninput="updateSeq(this)"
+                           th:value="${lineNodePojo.seq}"></td>
+                <td class="td-manage">
+
+                    <!-- 一级节点(厂区)和二级节点(区间)的编辑页面不同 -->
+                    <button th:if="${lineNodePojo.level == 1}" th:data-id="${lineNodePojo.id}" class="layui-btn layui-btn layui-btn-xs"
+                            onclick="x_admin_show('编辑', '/backstage/line/railwayLineInfo?id=' + this.getAttribute('data-id'), 800, 600)">
+                        <i class="layui-icon">&#xe642;</i>
+                        编辑
+                    </button>
+
+                    <button th:if="${lineNodePojo.level == 2}" th:data-id="${lineNodePojo.id}" th:data-railwayLineId="${lineNodePojo.parentId}"
+                            class="layui-btn layui-btn layui-btn-xs"
+                            onclick="x_admin_show('编辑', '/backstage/line/fragmentInfo?id='
+                            + this.getAttribute('data-id') + '&railwayLineId=' + this.getAttribute('data-railwayLineId'), 800, 600)">
+                        <i class="layui-icon">&#xe642;</i>
+                        编辑
+                    </button>
+                </td>
+            </tr>
+
+        </div>
+        </tbody>
+    </table>
+    <div th:include="/common/page::page('backstage-line-form')"></div>
+</div>
+<script>
+
+    hideKids();
+
+    layui.use(['form', 'upload'], function () {
+        const $ = layui.jquery
+            , upload = layui.upload;
+
+        //指定允许上传的文件类型
+        upload.render({
+            elem: '#import-lines'
+            , url: '/backstage/line/importLines'
+            , accept: 'file' //普通文件
+            , done: function (res) {
+                if (!res.isSuccess)
+                    alert(res.msg);
+                $('#find').click();
+            }
+        });
+    });
+
+    /*用户-删除*/
+    function member_del(obj, id) {
+        layer.confirm('确认要删除吗？', function (index) {
+            const level = obj.getAttribute('data-level');
+            let url = "";
+            if (level === '1')
+                url = "/backstage/line/railwayLine/delete";
+            if (level === '2')
+                url = "/backstage/line/fragment/delete";
+
+            const id = obj.getAttribute('data-id');
+
+            $.ajax({
+                url: url,
+                type: 'get',
+                data: {
+                    id: id
+                },
+                dataType: 'json',
+                success: function (result) {
+                    if (!result.success) {
+                        alert(result.msg);
+                        return false;
+                    }
+
+                    location.reload();
+                }
+            })
+
+            //发异步删除数据
+            // $(obj).parents("tr").remove();
+            // layer.msg('已删除!', {icon: 1, time: 1000});
+        });
+    }
+
+    function downloadTemplate() {
+        window.location.href = '/uploadimg/dummy.txt';
+    }
+
+    function delAll(argument) {
+        const data = tableCheck.getData();
+
+        layer.confirm('确认要删除选中的菜单吗？' + data, function (index) {
+            //捉到所有被选中的，发异步进行删除
+            layer.msg('删除成功', {icon: 1});
+
+            $.ajax({
+                url: '/menu/delete',
+                type: 'get',
+                data: {
+                    ids: data.toString()
+                },
+                dataType: 'json',
+                success: function (result) {
+                    console.log(result);
+                    if (!result.success) {
+                        alert(result.msg);
+                        return false;
+                    }
+
+                    location.reload();
+                }
+            })
+        });
+    }
+
+    function updateSeq(e) {
+        const id = $(e).attr('data-id');
+        const seq = $(e).val();
+
+        if (!seq)
+            return;
+
+        if (!isInteger(seq))
+            return;
+
+        $.ajax({
+            url: '/backstage/line/updateSeq',
+            type: 'get',
+            data: {
+                id: id,
+                seq: seq
+            },
+            dataType: 'json',
+            success: function (result) {
+                console.log(result);
+                if (!result.success) {
+                    alert(result.msg);
+                    return false;
+                }
+
+            }
+        })
+    }
+
+
+    window.onload = function () {
+        $("tbody.x-cate tr[fid!='0']").hide();  //默认不展开 2级显示
+    }
+
+</script>
+</body>
+
+</html>

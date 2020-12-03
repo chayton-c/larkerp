@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:v-on="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-L-admin1.0</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/lib/layui/lay/modules/laypage.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+    <script src="/vue/2.6.11/vue.js"></script>
+    <script th:inline="javascript">
+    </script>
+
+    <style>
+
+        .layui-table th{
+            font-weight: bold;
+            background-color: #5FB878;
+            color: #fff;
+            text-align:center;
+            font-size: 50px;
+        }
+
+        .layui-table th span{
+            font-weight: bold;
+            font-size: 13px;
+        }
+    </style>
+
+</head>
+
+<body class="layui-anim layui-anim-up">
+<div class="x-nav">
+    <a class="layui-btn layui-btn-primary layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right"
+       href="javascript:location.replace(location.href);" title="刷新">
+        <i class="layui-icon" style="line-height:38px">ဂ</i></a>
+</div>
+<div class="x-body">
+    <div class="layui-row">
+        <form class="layui-form layui-col-md12 x-so" id="backstage-lkj-form">
+            <input type="hidden" name="pageSize" th:value="${page.pageSize}"/>
+            <input type="hidden" name="currentPage"/>
+            <input type="hidden" name="lkjTaskId" th:value="${lkjTaskId}"/>
+            <div class="layui-input-inline">
+                <select id="railway-line-select" name="railwayLineId" lay-search="">
+                    <option value="">选择或输入厂区</option>
+                    <option th:each="railwayLine, iterstart : ${railwayLines}" th:value="${railwayLine.id}"
+                            th:text="${railwayLine.name}"
+                            th:selected="${railwayLineId == railwayLine.id}">厂区
+                    </option>
+                </select>
+            </div>
+            <div class="layui-input-inline">
+                <select id="fragment-id" name="fragmentId" lay-search="">
+                    <option value="">选择或输入区间</option>
+                    <option th:each="fragment, iterstart : ${fragments}" th:value="${fragment.id}"
+                            th:text="${fragment.name}"
+                            th:selected="${fragmentId == fragment.id}">区间
+                    </option>
+                </select>
+            </div>
+            <div class="layui-input-inline">
+                <select name="retrograde" lay-search="">
+                    <option value="">请选择方向</option>
+                    <option value="0" th:selected="${retrograde == '0'}">正向</option>
+                    <option value="1" th:selected="${retrograde == '1'}">逆向</option>
+                    <option value="2" th:selected="${retrograde == '2'}">半自闭</option>
+                </select>
+            </div>
+
+            <div class="layui-input-inline">
+                <select name="downriver" lay-search="">
+                    <option value="">请选择行别</option>
+                    <option value="0" th:selected="${downriver == '0'}">上行</option>
+                    <option value="1" th:selected="${downriver == '1'}">下行</option>
+                    <option value="2" th:selected="${downriver == '2'}">半自闭</option>
+                </select>
+            </div>
+
+            <button class="layui-btn" lay-submit="" lay-filter="sreach"><i class="layui-icon">&#xe615;</i></button>
+        </form>
+    </div>
+    <table class="layui-table" lay-filter="layFilter">
+        <thead>
+        <tr>
+            <!--            <th>电厂</th>-->
+            <!--            <th>局编号</th>-->
+            <th lay-data="{field:'2', width:60}">厂区</th>
+            <th lay-data="{field:'3', width:120}">区间</th>
+            <th lay-data="{field:'4', width:60}">方向</th>
+            <th lay-data="{field:'5', width:60}">行别</th>
+            <th lay-data="{field:'6', width:120}">区域</th>
+            <th lay-data="{field:'7', width:120}">起点信号机</th>
+            <th lay-data="{field:'8', width:120}">区域</th>
+            <th lay-data="{field:'9', width:120}">终点信号机</th>
+            <th lay-data="{field:'10', width:120}">信号机间距离(m)</th>
+            <th lay-data="{field:'lkjGroupName', width:200}">分组</th>
+            <th lay-data="{field:'11', width:400}">操作</th>
+        </tr>
+        </thead>
+        <tbody id="app">
+        <tr v-for="(lkjDataLine, index) in lkjDataLines">
+            <td>{{lkjDataLine.leftSemaphore.railwayLineName}}</td>
+            <td>{{lkjDataLine.leftSemaphore.fragmentName}}</td>
+            <td>{{lkjDataLine.leftSemaphore.retrograde}}</td>
+            <td>{{lkjDataLine.leftSemaphore.downriver}}</td>
+            <td>{{lkjDataLine.leftSemaphore.stationName}}</td>
+            <td>{{lkjDataLine.leftSemaphore.code}}</td>
+            <td>{{lkjDataLine.rightSemaphore.stationName}}</td>
+            <td>{{lkjDataLine.rightSemaphore.code}}</td>
+            <td>{{lkjDataLine.distance}}</td>
+            <td>{{lkjDataLine.lkjGroupName}}</td>
+            <td class="td-manage">
+                <button :data-id="lkjDataLine.id"
+                        :data-lkjTaskId="lkjTaskId"
+                        :data-previousLkjDataLineId="lkjDataLine.previousLkjDataLineId"
+                        :data-nextLkjDataLineId="lkjDataLine.nextLkjDataLineId"
+                        class="layui-btn layui-btn layui-btn-xs" style="display:inline;"
+                        onclick="x_admin_show(
+                                    '插入信号机',
+                                    '/backstage/lkjTaskCustom/insertPage?id=' + this.getAttribute('data-id')
+                                    + '&previousLkjDataLineId=' + this.getAttribute('data-previousLkjDataLineId')
+                                    + '&nextLkjDataLineId=' + this.getAttribute('data-nextLkjDataLineId')
+                                    + '&lkjTaskId=' + this.getAttribute('data-lkjTaskId'), 800,400
+                                    )">
+                    <i class="layui-icon">&#xe642;</i>插入信号机
+                </button>
+                <button :data-id="lkjDataLine.id"
+                        :data-lkjTaskId="lkjTaskId"
+                        :data-previousLkjDataLineId="lkjDataLine.previousLkjDataLineId"
+                        :data-nextLkjDataLineId="lkjDataLine.nextLkjDataLineId"
+                        class="layui-btn layui-btn layui-btn-xs" style="display:inline;"
+                        onclick="x_admin_show(
+                                    '删除',
+                                    '/backstage/lkjTaskCustom/deletePage?id=' + this.getAttribute('data-id')
+                                    + '&previousLkjDataLineId=' + this.getAttribute('data-previousLkjDataLineId')
+                                    + '&nextLkjDataLineId=' + this.getAttribute('data-nextLkjDataLineId')
+                                    + '&lkjTaskId=' + this.getAttribute('data-lkjTaskId')
+                                    )">
+                    <i class="layui-icon">&#xe642;</i>删除
+                </button>
+                <button :data-id="lkjDataLine.id"
+                        :data-lkjTaskId="lkjTaskId"
+                        :data-previousLkjDataLineId="lkjDataLine.previousLkjDataLineId"
+                        :data-nextLkjDataLineId="lkjDataLine.nextLkjDataLineId"
+                        :data-index="index"
+                        :id="lkjDataLine.id + index"
+                        onClick="updateLkjDataLineTask(this)"
+                        class="layui-btn layui-btn layui-btn-xs" style="display:inline;">
+                    <i class="layui-icon">&#xe642;</i>重新测量
+                </button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <div th:include="/common/page::page('backstage-lkj-form')"></div>
+
+</div>
+<script th:inline="javascript">
+    const table = layui.table;
+
+    var taiho = new Vue({
+        el: '#app',
+        data: {
+            lkjDataLines: /*[[${lkjDataLines}]]*/ [],
+            lkjTaskId: /*[[${lkjTaskId}]]*/ ''
+        },
+        methods: {}
+    });
+    console.log(taiho);
+
+    layui.use(['form'], function () {
+        const form = layui.form;
+
+        // 联动选择
+        form.on('select()', function (data) {
+            fragmentLinkage(data.elem);
+        });
+
+        form.on('submit(exportLkj)', function (data) {
+            const params = data.field;
+
+            let railwayLineId = params.railwayLineId;
+            let fragmentId = params.fragmentId;
+            let retrograde = params.retrograde;
+            let downriver = params.downriver;
+
+            // if (!fragmentId) {
+            //     layer.msg("请选择区间进行导出");
+            //     return false;
+            // }
+
+            window.location.href = '/backstage/lkj/export?railwayLineId=' + railwayLineId + '&fragmentId=' + fragmentId
+                + '&downriver=' + downriver + '&retrograde=' + retrograde;
+        });
+    });
+
+    $(function () {
+        layui.use(['upload', 'table'], function () {
+            const $ = layui.jquery
+                , upload = layui.upload;
+            const table = layui.table;
+
+            table.init('layFilter', {
+                height: document.documentElement.clientHeight - 250,
+                page: false,
+                limit: 30000,
+                done: function (res, curr, count) {
+                    // 每组颜色不同
+                    let fixedNode = $(".layui-table-body")[0];
+                    let child = $(fixedNode).find("tr");
+                    let previousGroupName = '';
+
+                    let index = 1;
+                    for (let i = 0; i < res.data.length; i++) {
+                        const groupName = res.data[i].lkjGroupName;
+
+                        if (groupName !== previousGroupName)
+                            index++;
+
+                        previousGroupName = groupName;
+                        $(child[i]).css("background-color", index % 2 === 0 ? "white" : "#f2f2f2");
+                    }
+                }
+            });
+
+            //指定允许上传的文件类型
+            upload.render({
+                elem: '#test3'
+                , url: '/backstage/lkj/import'
+                , accept: 'file' //普通文件
+                , done: function (res) {
+                    console.log(res)
+                }
+            });
+        });
+    });
+
+    function updateLkjDataLineTask(e) {
+        const baseLkjDataLineId = $(e).attr('data-id');
+        const lkjTaskId = $(e).attr('data-lkjTaskId');
+        const index = $(e).attr('data-index');
+        console.log(taiho);
+        console.log(taiho.lkjDataLines);
+        console.log(taiho.lkjDataLines[index]);
+
+        $.ajax({
+            url: '/backstage/lkjTaskCustom/updateLkjDataLineTask',
+            type: 'post',
+            data: {
+                baseLkjDataLineId: baseLkjDataLineId,
+                lkjTaskId: lkjTaskId
+            },
+            dataType: 'json',
+            success: function (result) {
+                if (!result.success) {
+                    alert(result.msg);
+                    return false;
+                }
+
+                taiho.lkjDataLines[index].distance = 0;
+                console.log(index);
+                console.log(parseInt(index) + 1);
+                console.log($('.laytable-cell-1-10').eq(index + 1).html());
+                $('.laytable-cell-1-10').eq(parseInt(index) + 1).html('<span style="color:red">0</span>')
+            }
+        });
+    }
+
+    function fragmentLinkage(e) {
+        const id = $(e).attr('id');
+        if (id !== 'railway-line-select')
+            return;
+
+        const railwayLineId = $(e).val();
+        $('#fragment-id').html('<option value="">直接选择或搜索选择</option>');
+
+        layui.form.render("select");//重新渲染 固定写法
+
+        if (!railwayLineId)
+            return;
+
+        $.ajax({
+            url: '/client/railwayLine/getFragments',
+            type: 'post',
+            data: 'railwayLineId=' + railwayLineId,
+            dataType: 'json',
+            success: function (result) {
+                if (!result.success) {
+                    alert(result.msg);
+                    return false;
+                }
+
+                $.each(result.obj, function (i, val) {
+                    $('#fragment-id').append('<option value="' + val.id + '">' + val.name + '</option>')
+                });
+
+                layui.form.render();//重新渲染 固定写法
+            }
+        });
+    }
+
+</script>
+</body>
+
+</html>

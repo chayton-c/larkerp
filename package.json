@@ -1,0 +1,8 @@
+{
+  "name": "lkj",
+  "version": "1.0.0",
+  "dependencies": {},
+  "devDependencies": {
+    "echarts": "^4.7.0"
+  }
+}

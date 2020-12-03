@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-L-admin1.0</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+
+</head>
+
+<body>
+<div class="x-body">
+    <form class="layui-form" id="user-add-form">
+
+        <div class="layui-upload">
+            <button type="button" class="layui-btn" id="telegraph-upload">上传app</button>
+            <input type="hidden" name="telegraph" id="telegraph"/>
+            <div class="layui-upload-list">
+                <img class="layui-upload-img" id="upload-view">
+                <p id="demoText"></p>
+            </div>
+        </div>
+
+        <div class="layui-upload">
+            <button onclick="downloadApp()" type="button" class="layui-btn" id="telegraph-upload">下载app</button>
+        </div>
+    </form>
+</div>
+<script>
+    layui.use(['form', 'layer', 'upload'], function () {
+        var $ = layui.jquery;
+        const upload = layui.upload;
+
+        //普通图片上传
+        const uploadInst = upload.render({
+            elem: '#telegraph-upload',
+            accept: 'file', //普通文件
+            url: '/app/update/upload',
+            done: function (res) {
+                //如果上传失败
+                if (!res.success)
+                    return layer.msg(res.msg);
+                //上传成功
+                layer.msg('上传成功');
+            },
+            error: function () {
+                //演示失败状态，并实现重传
+                const demoText = $('#demoText');
+                demoText.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-xs demo-reload">重试</a>');
+                demoText.find('.demo-reload').on('click', function () {
+                    uploadInst.upload();
+                });
+            }
+        });
+    });
+
+    function downloadApp() {
+        window.open("/uploadimg/app/powerPlant.apk");
+    }
+</script>
+</body>
+
+</html>

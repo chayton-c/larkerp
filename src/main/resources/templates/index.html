@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>5G智能运维管理系统 V1.0</title>
+    <meta name="renderer" content="webkit|ie-comp|ie-stand">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <meta http-equiv="Cache-Control" content="no-siteapp"/>
+
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script src="/js/jquery.min.js"></script>
+    <script src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+    <style>
+        .logotitle{
+            display:inline-block;
+            color: #cfdadd;
+            font-size: 20px;
+            margin:9px 5px 15px 15px;
+        }
+    </style>
+    <link rel="stylesheet" href="/lib/layui/css/layui.css">
+</head>
+<body>
+<!-- 顶部开始 -->
+<div class="container" style="margin-top: -4px;">
+    <!--    <div class="lo"><a href="index">ETMS V2.0</a></div>-->
+    <!--    <div class="lo"><a href="index"><img th:src="@{../static/images/lo.png}"/></a></div>-->
+    <div>
+        <!--        <div class="left_open">-->
+        <!--            <i title="展开左侧栏" class="iconfont">&#xe699;</i>-->
+        <!--        </div>-->
+        <ul class="layui-nav left fast-add">
+            <li class="layui-nav-item">
+                <a href="javascript:;" style="width: 220px;height: 0px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <img src="/images/pic/logo.png" style="width: 130px; height:30px"/>
+                    <!--            <img src="/images/pic/logo-crrc.png" style="width: 130px; height:30px"/>-->
+                </a>
+                <span class="logotitle" style="margin-left: 60px;margin-top:10px;"></span>
+            </li>
+            <li th:each="menu,iterStat : ${menus}" class="layui-nav-item">
+                <input type="hidden" th:value="${menu.id}">
+                <a href="javascript:" class="getSlave">&nbsp;&nbsp;
+                    <cite th:text="${menu.name}">一级菜单</cite>
+                </a>
+        </ul>
+          <!--  <ul class="layui-nav left fast-add" lay-filter="">
+                <li class="layui-nav-item">
+                    <a href="javascript:">+新增</a>
+                    <dl class="layui-nav-child"> &lt;!&ndash; 二级菜单 &ndash;&gt;
+                        <dd><a onClick="x_admin_show('资讯','http://www.baidu.com')"><i class="iconfont">&#xe6a2;</i>资讯</a></dd>
+                        <dd><a onClick="x_admin_show('图片','http://www.baidu.com')"><i class="iconfont">&#xe6a8;</i>图片</a></dd>
+                        <dd><a onClick="x_admin_show('用户','http://www.baidu.com')"><i class="iconfont">&#xe6b8;</i>用户</a></dd>
+                    </dl>
+                </li>
+            </ul>-->
+        <ul class="layui-nav right" lay-filter="">
+            <li class="layui-nav-item">
+                <a href="javascript:" th:text="${user.displayName}">用户名</a>
+                <dl class="layui-nav-child"> <!-- 二级菜单 -->
+                    <!--                <dd><a onClick="x_admin_show('个人信息','http://www.baidu.com')">个人信息</a></dd>-->
+                    <!--                <dd><a onClick="x_admin_show('修改密码', '/backstage/user/passwordPage', 500, 500)">修改密码</a></dd>-->
+                    <!--                <dd><a onClick="x_admin_show('切换帐号','http://www.baidu.com')">切换帐号</a></dd>-->
+                    <dd><a href="/auth/loginPage">退出</a></dd>
+                </dl>
+            </li>
+            <li class="layui-nav-item to-index"><a href="#" th:text="${user.userName}">用户名</a></li>
+        </ul>
+
+    </div>
+    <!-- 顶部结束 -->
+    <!-- 中部开始 -->
+    <!-- 左侧菜单开始 -->
+    <div class="left-nav">
+        <!--        <div id="side-nav">-->
+        <!--            <ul id="nav">-->
+        <!--                <li th:each="menu,iterStat : ${menus}">-->
+        <!--                    <a href="javascript:">&nbsp;&nbsp;-->
+        <!--                        &lt;!&ndash;                    <i th:text="${menu.icon}" class="iconfont">&#xe6eb;</i>&ndash;&gt;-->
+        <!--                        <cite th:text="${menu.name}">主菜单</cite>-->
+        <!--                        <i class="iconfont nav_right">&#xe6a7;</i>-->
+        <!--                    </a>-->
+        <!--                    <ul th:each="slave,iterStat : ${menu.menuList}" class="sub-menu">-->
+        <!--                        <li>-->
+        <!--                            <a th:_href="${slave.url}">&nbsp;&nbsp;&nbsp;&nbsp;<cite th:text="${slave.name}">主菜单名</cite></a>-->
+        <!--                        </li>-->
+        <!--                    </ul>-->
+        <!--                </li>-->
+        <!--            </ul>-->
+        <!--        </div>-->
+        <div id="side-nav" th:if="${slaves.size() > 0}">
+            <ul id="nav" class="sub-menu" th:each="secondaryMenu,iterStat : ${slaves.menuList }">
+                <li>
+                    <a th:_href="${secondaryMenu.url}">
+                        <span>&nbsp;&nbsp;</span>
+                        <cite th:text="${secondaryMenu.name}">二级菜单</cite>
+                        <i th:if="${secondaryMenu.menuList.size() > 0}" class="iconfont nav_right">&#xe6a7;</i>
+                    </a>
+                    <ul th:each="level3Menu,iterStat : ${secondaryMenu.menuList}" class="sub-menu">
+                        <li>
+                            <a th:_href="${level3Menu.url}" style="background-color: rgb(66, 71, 85);">
+                                <span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                                <cite th:text="${level3Menu.name}">三级菜单</cite>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <!-- <div class="x-slide_left"></div> -->
+        <!-- 左侧菜单结束 -->
+        <!-- 右侧主体开始 -->
+        <div class="page-content">
+            <div class="layui-tab tab" lay-filter="xbs_tab" lay-allowclose="false">
+                <ul class="layui-tab-title">
+                    <li class="home"><i class="layui-icon">&#xe68e;</i>我的桌面</li>
+                </ul>
+                <div class="layui-tab-content">
+                    <div class="layui-tab-item layui-show">
+                        <iframe src='welcome' frameborder="0" scrolling="yes" class="x-iframe"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="page-content-bg"></div>
+        <!-- 右侧主体结束 -->
+        <!-- 中部结束 -->
+        <!-- 底部开始 -->
+        <!--<div class="footer">
+            <div class="copyright">Copyright ©2019 L-admin v2.3 All Rights Reserved</div>
+        </div>-->
+        <!-- 底部结束 -->
+</div>
+</body>
+
+<script>
+    $(function(){
+        $(".getSlave").click(function(){
+            let id = $(this).prev().val();
+            window.location.href="/index?parentId=" + id;
+        });
+    })
+</script>
+</html>

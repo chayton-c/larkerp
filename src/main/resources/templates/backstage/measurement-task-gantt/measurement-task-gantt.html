@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <title>任务甘特图</title>
+    <script src="/js/dhtmlx/dhtmlxgantt.js?v=7.0.2"></script>
+    <script src="/js/jquery.min.js"></script>
+    <link rel="stylesheet" href="/css/dhtmlx/gantt/dhtmlx-gantt.css?v=7.0.2">
+    <!-- 导出pdf -->
+    <!--    <script src="/js/dhtmlx/gantt/gantt-api.js?v=7.0.2"></script>-->
+    <!--    <link rel="stylesheet" href="/css/dhtmlx/controls_styles.css?v=7.0.2">-->
+
+    <style>
+        html, body {
+            height: 100%;
+            padding: 0px;
+            margin: 0px;
+            overflow: hidden;
+        }
+        .gantt_add, .gantt_grid_head_add {
+            display: none;
+        }
+
+        .gantt_task_line {
+            background-color: yellowgreen;
+            border: 1px solid yellowgreen;
+        }
+    </style>
+</head>
+
+<body>
+<!-- 导出pdf -->
+<!--<div class="gantt_control">-->
+<!--    <input value="Export to PDF" type="button" onclick='gantt.exportToPDF()'>-->
+<!--    <input value="Export to PNG" type="button" onclick='gantt.exportToPNG()'>-->
+<!--</div>-->
+<div id="gantt_here" style='width:100%; height:100%;'></div>
+<script th:inline="javascript">
+    gantt.i18n.setLocale("cn");
+    gantt.config.min_column_width = 50;
+
+    gantt.config.scale_height = 90;
+
+    const monthScaleTemplate = function (date) {
+        const dateToStr = gantt.date.date_to_str("%M");
+        const endDate = gantt.date.add(date, 2, "month");
+        return dateToStr(date) + " - " + dateToStr(endDate);
+    };
+
+    gantt.config.width = 19000
+
+    gantt.config.scales = [
+        {unit: "year", step: 1, format: "%Y"},
+        {unit: "month", step: 3, format: monthScaleTemplate},
+        {unit: "month", step: 1, format: "%M"}
+    ];
+
+    // 自定义表单
+    gantt.config.columns = [
+        {name: "text", label: "任务名", align: "left", width: 300},
+        {
+            name: "assigned", label: "执行人", align: "left", width: 150,
+            template: function (item) {
+                if (!item.users) return "-";
+                return item.users.join(", ");
+            }
+        }
+    ];
+
+    gantt.plugins({
+        tooltip: true
+    });
+    gantt.templates.tooltip_text = function(start, end, task){
+
+        let deviceNameStr = "";
+        let deviceNameList = task.deviceNames;
+
+        if (!deviceNameList) {
+            return "<b>任务:</b> " + task.text + "<br/>"
+                    + "<b>时间:</b> " + task.startTime + " 至 " + task.endTime + "<br/>"
+                    + "<b>设备:</b> -";
+        }
+        console.log(deviceNameList);
+        console.log(deviceNameList.length);
+        for (let i = 0; i < deviceNameList.length; i++) {
+            deviceNameStr += deviceNameList[i] + ', ';
+            if (i % 5 === 4)
+                deviceNameStr += "<br/>"
+        }
+
+        return "<b>任务:</b> " + task.text + "<br/>"
+             + "<b>时间:</b> " + task.startTime + " 至 " + task.endTime + "<br/>"
+             + "<b>设备:</b> " + deviceNameStr;
+    };
+
+    gantt.init("gantt_here");
+
+    const ganttPojo = /*[[${ganttPojos}]]*/[];
+
+    gantt.parse({
+        "data" : ganttPojo,
+        "links":[]
+    });
+
+
+</script>
+</body>
+</html>

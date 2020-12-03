@@ -1,0 +1,51 @@
+<head>
+    <p>主体:
+        <input type="text" id="1" name="fname"/>
+    </p>
+    <p>事件:
+        <input type="text" id="2" name="fname"/>
+    </p>
+    <p>另一种说法:
+        <input type="text" id="3" name="fname"/>
+    </p>
+
+    <div id="4"></div>
+
+
+    <div onclick='createMarketingNomenclature()' style="width:400px;">
+        <button>生成</button>
+    </div>
+
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js">
+    </script>
+    <script type="text/javascript" src="http://www.jq22.com/demo/clipboard.js-master201703170013/dist/clipboard.min.js"></script>
+    <script>
+        // 生成营销号用语
+        function createMarketingNomenclature() {
+            var subject = $('#1').val();
+            var objects = $('#2').val();
+            var substitute = $('#3').val();
+
+            if (!subject) {
+                alert('请输入主体')
+                return;
+            }
+            if (!objects) {
+                alert('请输入事件')
+                return;
+            }
+            if (!substitute) {
+                alert('请输入另一种说法')
+                return;
+            }
+
+
+            var result = subject + objects + '是怎么回事呢？' + subject + '相信大家都很熟悉，但是' + subject + objects + '是怎么回事呢，下面就让小编带大家一起了解吧。</br>';
+            result += subject + objects + '，其实就是' + substitute + '，大家可能会很惊讶' + subject + '怎么会' + objects + '呢？但事实就是这样，小编也感到非常惊讶。</br>';
+            result += '这就是关于' + subject + objects + '的事情了，大家有什么想法呢，欢迎在评论区告诉小编一起讨论哦！</br>';
+
+            $('#4').html(result);
+            return result;
+        }
+    </script>
+</head>

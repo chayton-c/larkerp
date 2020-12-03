@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-L-admin1.0</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="/js/template/html5shiv.r29.html5.min.js"></script>
+    <script src="/js/template/respond-1.4.2.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+<div class="x-body">
+    <form action="" method="post" id="railway-line-info-form" class="layui-form layui-form-pane">
+        <input type="hidden" name="hide" value="0">
+        <input type="hidden" name="id" th:value="${measurementTask.id}">
+        <input type="hidden" name="notCurrentExecuted" th:value="${measurementTask.notCurrentExecuted}">
+        <input type="hidden" name="taskType" th:value="${repairClass}">
+
+        <div class="layui-form-item" id="form-div">
+            <label for="name" class="layui-form-label">
+                <span class="x-red">*</span>工区
+            </label>
+            <div class="layui-input-inline">
+                <select id="workAreaId" class="layui-select" name="workAreaId" lay-search="">
+                    <option value="">直接选择或搜索选择</option>
+                    <!--/*@thymesVar id="measurementTask" type="com.yingda.lkj.beans.entity.backstage.measurement.MeasurementTask"*/-->
+                    <!--/*@thymesVar id="workArea" type="com.yingda.lkj.beans.entity.backstage.organization.Organization"*/-->
+                    <option th:each="workArea, iterstart : ${workAreas}" th:value="${workArea.id}"
+                            th:text="${workArea.name}"
+                            th:selected="${workArea.id == measurementTask.workAreaId}">所在工区
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        <div th:if="${executeUserIds != null}" id="base-execute-user-form-items">
+            <div class="layui-form-item" th:each="executeUserId, iterstart : ${executeUserIds}">
+                <label for="name" class="layui-form-label">
+                    <span class="x-red">*</span>执行人
+                </label>
+                <div class="layui-input-inline" id="text">
+                    <select id="executeUserId" class="layui-select" name="executeUserId" lay-search="">
+                        <option value="">直接选择或搜索选择</option>
+                        <!--/*@thymesVar id="measurementTask" type="com.yingda.lkj.beans.entity.backstage.measurement.MeasurementTask"*/-->
+                        <!--/*@thymesVar id="user" type="com.yingda.lkj.beans.entity.system.User"*/-->
+                        <option th:each="user, iterstart : ${users}" th:value="${user.id}" th:text="${user.displayName}"
+                                th:selected="${user.id == executeUserId}">所在工区
+                        </option>
+                    </select>
+                </div>
+                <div th:if="${iterstart.count < iterstart.size}" class="layui-btn" onclick="delUserSelect(this)">删除
+                </div>
+                <div th:if="${iterstart.last}" class="layui-btn" onclick="addUserSelect(this)">添加</div>
+            </div>
+        </div>
+        <div th:if="${executeUserIds == null}" id="base-execute-user-form-items">
+            <div class="layui-form-item">
+                <label for="name" class="layui-form-label">
+                    <span class="x-red">*</span>执行人
+                </label>
+                <div class="layui-input-inline" id="text">
+                    <select id="executeUserId" class="layui-select" name="executeUserId" lay-search="">
+                        <option value="">直接选择或搜索选择</option>
+                        <!--/*@thymesVar id="measurementTask" type="com.yingda.lkj.beans.entity.backstage.measurement.MeasurementTask"*/-->
+                        <!--/*@thymesVar id="user" type="com.yingda.lkj.beans.entity.system.User"*/-->
+                        <option th:each="user, iterstart : ${users}" th:value="${user.id}"
+                                th:text="${user.displayName}">所在工区
+                        </option>
+                    </select>
+                </div>
+                <div class="layui-btn" onclick="addUserSelect(this)">添加</div>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label for="name" class="layui-form-label">
+                <span class="x-red">*</span>任务名
+            </label>
+            <div class="layui-input-inline">
+                <!--/*@thymesVar id="measurementTask" type="com.yingda.lkj.beans.entity.backstage.measurement.MeasurementTask"*/-->
+                <input type="text" id="name" name="name" required lay-verify="required"
+                       autocomplete="off" class="layui-input" th:value="${measurementTask.name}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label for="name" class="layui-form-label">
+                <span class="x-red">*</span>备注
+            </label>
+            <div class="layui-input-inline">
+                <!--/*@thymesVar id="measurementTask" type="com.yingda.lkj.beans.entity.backstage.measurement.MeasurementTask"*/-->
+                <input type="text" id="remark" name="remark"
+                       autocomplete="off" class="layui-input" th:value="${measurementTask.remark}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label for="name" class="layui-form-label">
+                <span class="x-red">*</span>开始时间
+            </label>
+            <div class="layui-input-inline">
+                <!--/*@thymesVar id="measurementTask" type="com.yingda.lkj.beans.entity.backstage.measurement.MeasurementTask"*/-->
+                <input class="layui-input" placeholder="开始时间" required lay-verify="required"
+                       id="startTime" name="startTime"
+                       autocomplete="off"
+                       th:value="${#dates.format(measurementTask.startTime,'yyyy-MM-dd HH:mm:ss')}">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label for="name" class="layui-form-label">
+                <span class="x-red">*</span>结束时间
+            </label>
+            <div class="layui-input-inline">
+                <!--/*@thymesVar id="measurementTask" type="com.yingda.lkj.beans.entity.backstage.measurement.MeasurementTask"*/-->
+                <input class="layui-input" placeholder="结束时间" required lay-verify="required"
+                       id="endTime" name="endTime" autocomplete="off"
+                       th:value="${#dates.format(measurementTask.endTime,'yyyy-MM-dd HH:mm:ss')}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <button class="layui-btn" lay-submit="" lay-filter="add">提交</button>
+        </div>
+    </form>
+</div>
+<script>
+    layui.use(['form', 'layer', 'laydate'], function () {
+        var $ = layui.jquery;
+        const form = layui.form
+            , layer = layui.layer
+            , laydate = layui.laydate;
+
+
+        //执行一个laydate实例
+        laydate.render({
+            elem: '#startTime',
+            type: 'datetime'
+        });
+
+        //执行一个laydate实例
+        laydate.render({
+            elem: '#endTime',
+            type: 'datetime'
+        });
+
+        //监听提交
+        form.on('submit(add)', function (data) {
+            $.ajax({
+                url: '/backstage/measurementTaskSubmit/saveOrUpdate',
+                type: 'post',
+                data: $('#railway-line-info-form').serialize(),
+                dataType: 'json',
+                success: function (result) {
+                    console.log(result);
+                    if (!result.success) {
+                        alert(result.msg);
+                        return false;
+                    }
+
+                    layer.alert("提交成功", {icon: 6}, function () {
+                        // 获得frame索引
+                        const index = parent.layer.getFrameIndex(window.name);
+                        parent.location.reload();
+                        //关闭当前frame
+                        parent.layer.close(index);
+                    });
+                }
+            });
+
+            return false;
+        });
+    });
+
+    let userSelectId = 0;
+
+    //点击添加 一个下拉框
+    function addUserSelect(e) {
+        userSelectId += 1;
+        const content =
+            '<div class="layui-form-item">' +
+            '<label for="name" class="layui-form-label">' +
+            '<span class="x-red">*</span>执行人</label>' +
+            '<div class="layui-input-inline" id="text">' +
+            '<select id="' + userSelectId + '" class="layui-select" name="executeUserId" lay-search="">' +
+            '</select>' +
+            '</div>' +
+            '<div class="layui-btn" onclick="addUserSelect(this)">添加</div>' +
+            '</div>';
+        console.log(e.valueOf());
+        $(e).attr("onclick", "delUserSelect(this)");
+        e.innerHTML = "删除";
+        $('#base-execute-user-form-items').append(content);
+        let options = $('#executeUserId').html();
+        options = options.replace('selected', '')
+        $('#' + userSelectId).html(options);
+        layui.form.render("select");//重新渲染 固定写法
+    }
+
+    //删除 下拉框
+    function delUserSelect(e) {
+        console.log(e.valueOf());
+        console.log(e.parentNode);
+        e.parentNode.remove();
+    }
+
+</script>
+</body>
+
+</html>

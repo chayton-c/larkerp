@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-L-admin1.0</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="/js/template/html5shiv.r29.html5.min.js"></script>
+    <script src="/js/template/respond-1.4.2.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+<div class="x-body">
+    <form action="" method="post" id="railway-line-info-form" class="layui-form layui-form-pane">
+        <input type="hidden" name="hide" value="0">
+        <!--/*@thymesVar id="measurementTemplate" type="com.yingda.lkj.beans.entity.backstage.measurement.MeasurementTemplate"*/-->
+        <input type="hidden" name="id" th:value="${measurementTemplate.id}">
+
+        <div class="layui-form-item">
+            <label for="name" class="layui-form-label">
+                <span class="x-red">*</span>修程
+            </label>
+            <div class="layui-input-inline">
+                <select id="repairClass" class="layui-select" name="repairClass" lay-search="">
+                    <option value="">直接选择或搜索选择</option>
+                    <option value="0" th:selected="${measurementTemplate.repairClass == 0}">日常养护
+                    <option value="1" th:selected="${measurementTemplate.repairClass == 1}">集中检修
+                    <option value="2" th:selected="${measurementTemplate.repairClass == 2}">集中整治
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label for="name" class="layui-form-label">
+                <span class="x-red">*</span>设备类型
+            </label>
+            <div class="layui-input-inline">
+                <select id="deviceType" class="layui-select" name="deviceTypeId" lay-search="">
+                    <option value="">直接选择或搜索选择</option>
+                    <!--/*@thymesVar id="deviceType" type="com.yingda.lkj.beans.entity.backstage.device.DeviceType"*/-->
+                    <option th:each="deviceType, iterstart : ${deviceTypes}" th:value="${deviceType.id}" th:text="${deviceType.name}"
+                            th:selected="${deviceType.id == measurementTemplate.deviceTypeId}">单位分组
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label for="name" class="layui-form-label">
+                <span class="x-red">*</span>设备子类型
+            </label>
+            <div class="layui-input-inline">
+                <select id="deviceSubTypeId" class="layui-select" name="deviceSubTypeId" lay-search="">
+                    <option value="">直接选择或搜索选择</option>
+                    <!--/*@thymesVar id="deviceSubType" type="com.yingda.lkj.beans.entity.backstage.device.DeviceSubType"*/-->
+                    <option th:each="deviceSubType, iterstart : ${deviceSubTypes}" th:value="${deviceSubType.id}" th:text="${deviceSubType.name}"
+                            selected>设备子类型
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label for="name" class="layui-form-label">
+                <span class="x-red">*</span>模板名称
+            </label>
+            <div class="layui-input-inline">
+                <!--/*@thymesVar id="measurementTask" type="com.yingda.lkj.beans.entity.backstage.measurement.MeasurementTask"*/-->
+                <input type="text" id="name" name="name" required lay-verify="required"
+                       autocomplete="off" class="layui-input" th:value="${measurementTemplate.name}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label for="name" class="layui-form-label">
+                <span class="x-red">*</span>描述
+            </label>
+            <div class="layui-input-block">
+                <!--/*@thymesVar id="measurementTask" type="com.yingda.lkj.beans.entity.backstage.measurement.MeasurementTask"*/-->
+                <input type="text" id="description" name="description" required lay-verify="required"
+                       autocomplete="off" class="layui-input" th:value="${measurementTemplate.description}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label for="name" class="layui-form-label">
+                <span class="x-red">*</span>备注
+            </label>
+            <div class="layui-input-block">
+                <!--/*@thymesVar id="measurementTask" type="com.yingda.lkj.beans.entity.backstage.measurement.MeasurementTemplate"*/-->
+                <input type="text" id="remark" name="remark" required lay-verify="required"
+                       autocomplete="off" class="layui-input" th:value="${measurementTemplate.remark}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <button class="layui-btn" lay-submit="" lay-filter="add">提交</button>
+        </div>
+    </form>
+</div>
+<script>
+    layui.use(['form','layer'], function(){
+        $ = layui.jquery;
+        var form = layui.form
+            ,layer = layui.layer;
+
+        // 联动选择
+        form.on('select()', function (data) {
+            deviceTypeLinkage(data.elem);
+        });
+
+        //监听提交
+        form.on('submit(add)', function(data){
+            $.ajax({
+                url: '/backstage/measurementTemplate/measurementTemplateInfo/saveOrUpdate',
+                type: 'post',
+                data: $('#railway-line-info-form').serialize(),
+                dataType: 'json',
+                success: function (result) {
+                    console.log(result);
+                    if (!result.success) {
+                        alert(result.msg);
+                        return false;
+                    }
+
+                    layer.alert("提交成功", {icon: 6},function () {
+                        // 获得frame索引
+                        const index = parent.layer.getFrameIndex(window.name);
+                        parent.location.reload();
+                        //关闭当前frame
+                        parent.layer.close(index);
+                    });
+                }
+            });
+
+            return false;
+        });
+    });
+
+    function deviceTypeLinkage(e) {
+        const id = $(e).attr('id');
+
+        console.log(id)
+        if (id !== 'deviceType')
+            return;
+
+        const deviceTypeId = $(e).val();
+        if (!deviceTypeId)
+            return;
+
+        $('#deviceSubTypeId').html('<option value="">直接选择或搜索选择</option>');
+        layui.form.render("select");//重新渲染 固定写法
+
+        $.ajax({
+            url: '/client/deviceSubType/getDeviceSubType',
+            type: 'post',
+            data: 'deviceTypeId=' + deviceTypeId,
+            dataType: 'json',
+            success: function (result) {
+                console.log(result);
+
+                if (!result.success) {
+                    alert(result.msg);
+                    return false;
+                }
+
+                $.each(result.obj, function (i, val) {
+                    $('#deviceSubTypeId').append('<option value="' + val.id + '">' + val.name + '</option>')
+                });
+
+                layui.form.render("select");//重新渲染 固定写法
+            }
+        });
+    }
+</script>
+</body>
+
+</html>

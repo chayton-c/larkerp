@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>作业轨迹回放</title>
+	<style type="text/css">
+		html {
+			height: 100%
+		}
+		body {
+			height: 100%;
+			margin: 0;
+			padding: 0;
+		}
+		#container {
+			height: 100%;
+		}
+		.input-date input {
+			height: 30px;
+		}
+	</style>
+	<script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=YWdGplhYjUGQ3GtpKNeuTM2S"></script>
+	<script type="text/javascript" src="/js/jquery.min.js" charset="utf-8"></script>
+	<script type="text/javascript" src="/js/util.js" charset="utf-8"></script>
+</head>
+
+<body>
+	<div id="container"></div>
+	<input type="hidden" id="lkjDateLineId" th:value="${lkjDateLineId}">
+	<script type="text/javascript">
+		var map;
+
+		$(function () {
+			// 巡检计划id
+			var lkjDateLineId = $('#lkjDateLineId').val();
+			console.log("lkjDateLineId = "+ lkjDateLineId);
+			loadData(lkjDateLineId);
+		});
+
+		// 后台请求数据
+		function loadData(lkjDateLineId) {
+			$.ajax({
+				url: '/backstage/lkjApproveUpdate/getLocations?lkjDateLineId=' + lkjDateLineId,
+				type: 'get',
+				dataType: 'json',
+				success: function (result) {
+					const obj = result.obj;
+
+					//绘图
+					drawTrack(obj);
+				}
+			});
+		}
+
+		// 画路径
+		function drawTrack(pRoute) {
+			if (pRoute.length === 0)
+				return;
+
+			//地图操作开始
+			map = new BMap.Map("container");
+			map.centerAndZoom(new BMap.Point(pRoute[0].longitude, pRoute[0].latitude), 5); //初始显示中国。
+			map.enableScrollWheelZoom(); //滚轮放大缩小
+
+
+			//清除当前所有的定时器和地图上的覆盖物。
+			map.clearOverlays();
+
+			drawRoute(pRoute, "red");
+		}
+
+		function drawRoute(routes, color) {
+
+			var donePoints = []; 	//已经显示的点。
+			var bPoints = []; 		//保存百度化的坐标组。用于重设地图的中心点和显示级别。
+
+			bPoints.length = 0;
+			donePoints.length = 0;
+
+			console.log(routes);
+			for (var j = 0; j < routes.length; j++) {
+				var doneLen = donePoints.length;
+				var linePoints = [];
+
+				if (doneLen !== 0) {
+					linePoints.push(donePoints[doneLen - 1]);
+				}
+				linePoints.push(routes[j]);
+				donePoints.push(routes[j]);
+
+				addLine(linePoints, color); //把原始数据的轨迹线添加到地图上。
+				addMarker(routes[j]);
+
+				bPoints.push(new BMap.Point(routes[j].longitude, routes[j].latitude));
+				setZoom(bPoints);
+			};
+		}
+
+		//根据点信息实时更新地图显示范围，让轨迹完整显示。设置新的中心点和显示级别
+		function setZoom(bPoints) {
+			var view = map.getViewport(eval(bPoints));
+			var mapZoom = view.zoom;
+			var centerPoint = view.center;
+			map.centerAndZoom(centerPoint, mapZoom);
+		}
+
+
+		//在轨迹点上创建图标，并添加点击事件，显示轨迹点信息。points,数组。
+		function addMarker(points) {
+
+			var myIcon = new BMap.Icon('/images/pic/location.png', // 百度图片
+				new BMap.Size(10, 22), // 视窗大小
+				{
+					imageSize: new BMap.Size(144, 92), // 引用图片实际大小
+					imageOffset: new BMap.Size(-10, 0) // 图片相对视窗的偏移
+				});
+
+			// 创建标注对象并添加到地图
+			var point = new BMap.Point(points.longitude, points.latitude);
+			var marker = new BMap.Marker(point, {
+				icon: myIcon
+			});
+
+			map.addOverlay(marker);
+			(function () {
+				var thePoint = points;
+				marker.addEventListener("click", function () {
+					showInfo(this, thePoint);
+				});
+			})();
+
+		}
+
+		//点击轨迹点后显示信息窗口
+		function showInfo(thisMaker, point) {
+			var sContent =
+				"<ul style='margin:0 0 5px 0;padding:0.2em 0'>" +
+				"<li style='line-height: 26px;font-size: 15px;'>" +
+				"<span style='width: 50px;display: inline-block;'>经度：</span>" + point.longitude + "</li>" +
+				"<li style='line-height: 26px;font-size: 15px;'>" +
+				"<span style='width: 50px;display: inline-block;'>纬度：</span>" + point.latitude + "</li>" +
+				"<li style='line-height: 26px;font-size: 15px;'>" +
+				"<span style='width: 50px;display: inline-block;'>时间：</span>" + point.executeTime + "</li>" +
+				"</ul>";
+			var infoWindow = new BMap.InfoWindow(sContent); // 创建信息窗口对象
+			thisMaker.openInfoWindow(infoWindow); //图片加载完毕重绘infowindow
+		}
+
+		//添加线
+		function addLine(points, color) {
+			var linePoints = [];
+			var pointsLen = points.length;
+			if (pointsLen == 0) {
+				return;
+			}
+			// 创建标注对象并添加到地图
+			console.log(points)
+			for (var i = 0; i < pointsLen; i++) {
+				linePoints.push(new BMap.Point(points[i].longitude, points[i].latitude));
+			}
+			var polyline = new BMap.Polyline(linePoints, {
+				strokeColor: color,
+				strokeWeight: 2,
+				strokeOpacity: 0.5
+			}); //创建折线
+			map.addOverlay(polyline); //增加折线
+		}
+	</script>
+</body>
+
+</html>

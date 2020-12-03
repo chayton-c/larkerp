@@ -1,0 +1,209 @@
+{
+  "json": [
+    {
+      "value": [
+        {
+          "id": 99,
+          "item_name": "闪光频率",
+          "mainFunctionCode": "0xA0",
+          "maxValue": 0,
+          "measurementUnitId": "c3ceb2f5-1798-11a1-9cc7-bdff2bfcdead",
+          "minValue": 0,
+          "name": "文本输入",
+          "subFunctionCode": "0x00",
+          "valueType": "0"
+        },
+        {
+          "id": 82,
+          "item_name": "拍照",
+          "mainFunctionCode": "0xA2",
+          "maxValue": 0,
+          "measurementUnitId": "61d46323-6d54-3aa3-a05f-8beb712d93eb",
+          "minValue": 0,
+          "name": "拍照",
+          "subFunctionCode": "0x00",
+          "valueType": "0"
+        },
+        {
+          "id": 77,
+          "item_name": "点灯变压器Ⅱ次侧电压",
+          "mainFunctionCode": "0x01",
+          "maxValue": 0,
+          "measurementUnitId": "4c521183-c7f7-4a3e-b930-32868ce3ce4b",
+          "minValue": 0,
+          "name": "交流电压",
+          "subFunctionCode": "0x01",
+          "valueType": "0"
+        },
+        {
+          "id": 62,
+          "item_name": "测试图片",
+          "mainFunctionCode": "测试单位类型",
+          "maxValue": 0,
+          "measurementUnitId": "19ba7ff3-8dcb-4e1c-802f-e9e54d049a2b",
+          "minValue": 0,
+          "name": "测试单位类型",
+          "subFunctionCode": "测试单位类型",
+          "valueType": "2"
+        },
+        {
+          "id": 99,
+          "item_name": "灯丝继电器型号1DJ\/2DJ",
+          "mainFunctionCode": "0xA0",
+          "maxValue": 0,
+          "measurementUnitId": "c3ceb2f5-1798-11a1-9cc7-bdff2bfcdead",
+          "minValue": 0,
+          "name": "文本输入",
+          "subFunctionCode": "0x00",
+          "valueType": "0"
+        },
+        {
+          "id": 99,
+          "item_name": "文本输入",
+          "mainFunctionCode": "0xA0",
+          "maxValue": 0,
+          "measurementUnitId": "c3ceb2f5-1798-11a1-9cc7-bdff2bfcdead",
+          "minValue": 0,
+          "name": "文本输入",
+          "subFunctionCode": "0x00",
+          "valueType": "0"
+        },
+        {
+          "id": 69,
+          "item_name": "下拉选择",
+          "mainFunctionCode": "0xA1",
+          "maxValue": 0,
+          "measurementUnitId": "2ce16c15-f820-e4e8-233e-1401b6bbcfb7",
+          "minValue": 0,
+          "name": "下拉选择",
+          "subFunctionCode": "选择项用英文逗号分隔",
+          "valueType": "1"
+        },
+        {
+          "id": 77,
+          "item_name": "点灯变压器Ⅰ次侧电压",
+          "mainFunctionCode": "0x01",
+          "maxValue": 0,
+          "measurementUnitId": "4c521183-c7f7-4a3e-b930-32868ce3ce4b",
+          "minValue": 0,
+          "name": "交流电压",
+          "subFunctionCode": "0x01",
+          "unit": "mV",
+          "value": "21.6",
+          "valueType": "0"
+        },
+        {
+          "id": 99,
+          "item_name": "仪表号",
+          "mainFunctionCode": "0xA0",
+          "maxValue": 0,
+          "measurementUnitId": "c3ceb2f5-1798-11a1-9cc7-bdff2bfcdead",
+          "minValue": 0,
+          "name": "文本输入",
+          "subFunctionCode": "0x00",
+          "valueType": "0"
+        },
+        {
+          "id": 77,
+          "item_name": "交流电压",
+          "mainFunctionCode": "0x01",
+          "maxValue": 0,
+          "measurementUnitId": "4c521183-c7f7-4a3e-b930-32868ce3ce4b",
+          "minValue": 0,
+          "name": "交流电压",
+          "subFunctionCode": "0x01",
+          "valueType": "0"
+        },
+        {
+          "id": 97,
+          "item_name": "点灯变压器Ⅱ次侧电流",
+          "mainFunctionCode": "0x03",
+          "maxValue": 0,
+          "measurementUnitId": "b92a5e5a-5a8c-6b8c-6daa-a7dbc373e548",
+          "minValue": 0,
+          "name": "交流电流",
+          "subFunctionCode": "0x01",
+          "valueType": "0"
+        },
+        {
+          "id": 92,
+          "item_name": "灯丝继电器电流",
+          "mainFunctionCode": "0x04",
+          "maxValue": 0,
+          "measurementUnitId": "a013f24c-aed4-93d1-d3b8-5b5450cb2e78",
+          "minValue": 0,
+          "name": "直流电流",
+          "subFunctionCode": "0x01",
+          "valueType": "0"
+        },
+        {
+          "id": 80,
+          "item_name": "电阻测量",
+          "mainFunctionCode": "0x12",
+          "maxValue": 0,
+          "measurementUnitId": "5e211f9c-d1a7-4fb6-f8c3-917e15da32de",
+          "minValue": 0,
+          "name": "电阻测量",
+          "subFunctionCode": "0x01",
+          "valueType": "0"
+        },
+        {
+          "id": 60,
+          "item_name": "载频测量上边频",
+          "mainFunctionCode": "0x08",
+          "maxValue": 0,
+          "measurementUnitId": "0b45badc-cadc-62c8-3b0d-58044e27ab5b",
+          "minValue": 0,
+          "name": "载频测量上边频",
+          "subFunctionCode": "0x06",
+          "valueType": "0"
+        },
+        {
+          "id": 77,
+          "item_name": "按钮压降",
+          "mainFunctionCode": "0x01",
+          "maxValue": 0,
+          "measurementUnitId": "4c521183-c7f7-4a3e-b930-32868ce3ce4b",
+          "minValue": 0,
+          "name": "交流电压",
+          "subFunctionCode": "0x01",
+          "valueType": "0"
+        },
+        {
+          "id": 77,
+          "item_name": "副灯丝点灯端电压",
+          "mainFunctionCode": "0x01",
+          "maxValue": 0,
+          "measurementUnitId": "4c521183-c7f7-4a3e-b930-32868ce3ce4b",
+          "minValue": 0,
+          "name": "交流电压",
+          "subFunctionCode": "0x01",
+          "valueType": "0"
+        },
+        {
+          "id": 77,
+          "item_name": "主灯丝点灯端电压",
+          "mainFunctionCode": "0x01",
+          "maxValue": 0,
+          "measurementUnitId": "4c521183-c7f7-4a3e-b930-32868ce3ce4b",
+          "minValue": 0,
+          "name": "交流电压",
+          "subFunctionCode": "0x01",
+          "valueType": "0"
+        }
+      ],
+      "deviceId": "07ffd7ee-f27d-40b7-9d6a-c957ea3bc841",
+      "funCode": "",
+      "id": 2,
+      "isTask": "2",
+      "latitude": "0.0",
+      "longitude": "0.0",
+      "measurementItemFieldId": "",
+      "measurementUnitId": "4c521183-c7f7-4a3e-b930-32868ce3ce4b",
+      "measurementTaskDetailId": "",
+      "startTime": "1593333623213",
+      "timer": "1593333645974",
+      "userId": "3c22be25-5721-4a3a-8d52-074df8c995af"
+    }
+  ]
+}

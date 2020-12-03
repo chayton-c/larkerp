@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-L-admin1.0</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/lib/layui/lay/modules/laypage.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+    <script type="text/javascript" src="/js/util.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="/js/template/html5shiv.r29.html5.min.js"></script>
+    <script src="/js/template/respond-1.4.2.min.js"></script>
+    <![endif]-->
+</head>
+
+<body class="layui-anim layui-anim-up">
+<div class="x-body">
+    <div class="layui-row">
+    </div>
+    <table class="layui-table" lay-filter="akagi">
+        <thead>
+        <tr>
+            <th>
+                <div class="layui-unselect header layui-form-checkbox" lay-skin="primary"><i class="layui-icon">&#xe605;</i></div>
+            </th>
+            <th>测量项</th>
+            <th>测量字段</th>
+            <th>单位名称</th>
+            <th>测量值</th>
+            <th>最大值</th>
+            <th>最小值</th>
+            <th>状态</th>
+            <th>加入时间</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!--/*@thymesVar id="measurementItemFieldPojos" type="java.util.ArrayList"*/-->
+        <tr th:each="measurementItemFieldPojo, iterstart : ${measurementItemFieldPojos}">
+            <td>
+                <div class="layui-unselect layui-form-checkbox" lay-skin="primary" data-id='2'><i class="layui-icon">&#xe605;</i></div>
+            </td>
+            <!--/*@thymesVar id="measurementItemFieldPojo" type="com.yingda.lkj.beans.pojo.measurement.MeasurementItemFieldPojo"*/-->
+            <!--/*@thymesVar id="editable" type="java.lang.Boolean"*/-->
+            <td th:text="${measurementItemFieldPojo.measurementItemName}">测量项</td>
+            <td th:text="${measurementItemFieldPojo.name}">测量字段</td>
+            <td th:text="${measurementItemFieldPojo.unitName}">单位名称</td>
+
+            <!-- 不是执行人只能查看，是执行人可以修改 -->
+            <div th:if="${editable != true}">
+                <td th:if="${measurementItemFieldPojo.valueType == 0}" th:text="${measurementItemFieldPojo.value}">测量值</td>
+                <td th:if="${measurementItemFieldPojo.valueType == 1}" th:text="${measurementItemFieldPojo.value}">测量值</td>
+                <td th:if="${measurementItemFieldPojo.valueType == 2}">
+                    <img th:src="${measurementItemFieldPojo.url}" th:data-src="${measurementItemFieldPojo.url}" onclick="show_img(this)"/>
+                </td>
+            </div>
+            <div th:if="${editable == true}">
+                <td th:if="${measurementItemFieldPojo.valueType == 0 && measurementItemFieldPojo.isSelectValue == 0}">
+                    <input type="text"
+                           th:value="${measurementItemFieldPojo.value}"
+                           th:data-measurementItemFieldId="${measurementItemFieldPojo.id}"
+                           th:data-measurementTaskDetailId="${measurementTaskDetailId}"
+                           oninput="executeFiledValue(this)"/>
+                </td>
+                <td th:if="${measurementItemFieldPojo.valueType == 1 && measurementItemFieldPojo.isSelectValue == 0}">
+                    <input type="text"
+                           th:value="${measurementItemFieldPojo.value}"
+                           th:data-measurementItemFieldId="${measurementItemFieldPojo.id}"
+                           th:data-measurementTaskDetailId="${measurementTaskDetailId}"
+                           oninput="executeFiledValue(this)"/>
+                </td>
+                <td th:if="${measurementItemFieldPojo.isSelectValue == 1}">
+                    <select th:value="${measurementItemFieldPojo.value}"
+                            th:data-measurementItemFieldId="${measurementItemFieldPojo.id}"
+                            th:data-measurementTaskDetailId="${measurementTaskDetailId}"
+                            style="height: 25px;width: 156px;border: 1px solid #111"
+                            oninput="executeFiledValue(this)">
+                        <option>选择项</option>
+                        <option th:each="option, iterstart : ${measurementItemFieldPojo.options}"
+                                th:value="${option}"
+                                th:text="${option}"
+                                th:selected="${measurementItemFieldPojo.value == option}">
+                        </option>
+                    </select>
+                </td>
+
+                <td th:if="${measurementItemFieldPojo.valueType == 2 && measurementItemFieldPojo.isSelectValue == 0}">
+<!--                    <div th:text="${measurementItemFieldPojo}">2333</div>-->
+                    <img th:src="${measurementItemFieldPojo.value}" th:data-src="${measurementItemFieldPojo.value}" onclick="show_img(this)"/>
+                </td>
+            </div>
+
+            <td th:text="${measurementItemFieldPojo.currentMaxValue}">最大值</td>
+            <td th:text="${measurementItemFieldPojo.currentMinValue}">最小值</td>
+
+            <!-- 状态 -->
+            <td th:id="abnormal" th:if="${measurementItemFieldPojo.abnormal == 0}">正常</td>
+            <td th:id="abnormal" th:if="${measurementItemFieldPojo.abnormal == 1}">异常</td>
+            <td th:id="abnormal" th:if="${measurementItemFieldPojo.abnormal == 2}">待处理</td>
+
+            <td th:text="${measurementItemFieldPojo.addTime}">加入时间</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<script th:inline="javascript">
+    function executeFiledValue(e) {
+        const input = $(e);
+
+        let measurementItemFieldId = input.attr('data-measurementItemFieldId');
+        let measurementTaskDetailId = input.attr('data-measurementTaskDetailId');
+        let value = input.val();
+
+        if (!value)
+            return;
+
+        $.ajax({
+            url: '/backstage/measurementItemFieldValue/saveOrUpdateFileValue',
+            type: 'get',
+            data: {
+                measurementItemFieldId: measurementItemFieldId,
+                measurementTaskDetailId: measurementTaskDetailId,
+                value: value
+
+            },
+            dataType: 'json',
+            success: function (result) {
+                console.log(result);
+                if (!result.success) {
+                    alert(result.msg);
+                    return false;
+                }
+
+                let measurementItemFieldValue = result.obj;
+                let abnormal = measurementItemFieldValue.abnormal;
+
+                let abnormalTh = $(input).parent().siblings('#abnormal');
+                console.log($(abnormalTh));
+                if (abnormal === 0)
+                    $(abnormalTh).text('正常');
+                if (abnormal === 1)
+                    $(abnormalTh).text('异常');
+                layui.form.render("select");//重新渲染 固定写法
+            }
+        })
+    }
+</script>
+</body>
+
+</html>

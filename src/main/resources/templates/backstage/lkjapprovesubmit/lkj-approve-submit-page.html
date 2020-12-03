@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-L-admin1.0</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="/js/template/html5shiv.r29.html5.min.js"></script>
+    <script src="/js/template/respond-1.4.2.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+<div class="x-body">
+    <form class="layui-form" id="user-add-form">
+        <input type="hidden" name="seq" value="0"/>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">所属厂区</label>
+            <div class="layui-input-inline">
+                <select id="railway-line-select" lay-verify="required" lay-search="">
+                    <option value="">直接选择或搜索选择</option>
+                    <option th:each="railwayLine, iterStat : ${railwayLines}" th:value="${railwayLine.id}" th:text="${railwayLine.name}"
+                            th:selected="${railwayLine.id=='3142d11e-b60a-46e2-874c-c07ba3b1c278'}">厂区</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">所属区间</label>
+            <div class="layui-input-inline">
+                <select name="fragmentId" id="fragment-id" lay-verify="required" lay-search="">
+                    <option value="">直接选择或搜索选择</option>
+                    <option th:each="fragment, iterStat : ${fragments}" th:value="${fragment.id}" th:text="${fragment.name}">所属区间</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">起信号机</label>
+            <div class="layui-input-inline">
+                <select name="leftDeviceId" lay-verify="required" lay-search="">
+                    <option value="">直接选择或搜索选择</option>
+                    <option th:each="device, iterStat : ${devices}" th:value="${device.id}" th:text="${device.name}">起信号机</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">止信号机</label>
+            <div class="layui-input-inline">
+                <select name="rightDeviceId" lay-verify="required" lay-search="">
+                    <option value="">直接选择或搜索选择</option>
+                    <option th:each="device, iterStat : ${devices}" th:value="${device.id}" th:text="${device.name}">止信号机</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">审核人</label>
+            <div class="layui-input-inline">
+                <select name="approveUserId" lay-search="">
+                    <option value="">直接选择或搜索选择</option>
+                    <option th:each="approveUsers, iterStat : ${availableApproveUsers}" th:value="${approveUsers.id}" th:text="${approveUsers.displayName}">止信号机
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">
+                审核名称
+            </label>
+            <div class="layui-input-inline">
+                <input type="text" placeholder="如不填写，则系统自动生成审核名称" name="name" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">
+                <span class="x-red">*</span>距离
+            </label>
+            <div class="layui-input-inline">
+                <input type="number" name="distance" required lay-verify="required" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">
+                备注
+            </label>
+            <div class="layui-input-inline">
+                <input type="text" name="remark" required class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">
+                <span class="x-red">*</span>上行/下行
+            </label>
+            <div class="layui-input-inline">
+                <select name="downriver" lay-verify="required" lay-search="">
+                    <option value="0">上行</option>
+                    <option value="1">下行</option>
+                    <option value="2">半自闭</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">
+                <span class="x-red">*</span>正向/逆向
+            </label>
+            <div class="layui-input-inline">
+                <select name="retrograde" lay-verify="required" lay-search="">
+                    <option value="0">正向</option>
+                    <option value="1">逆向</option>
+                    <option value="2">半自闭</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-upload">
+            <button type="button" class="layui-btn" id="telegraph-upload">上传图片</button>
+            <input type="hidden" name="telegraph" id="telegraph"/>
+            <div class="layui-upload-list">
+                <img class="layui-upload-img" id="upload-view">
+                <p id="demoText"></p>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <button class="layui-btn" lay-filter="add" lay-submit="">
+                提交
+            </button>
+        </div>
+    </form>
+</div>
+<script>
+    layui.use(['form', 'layer', 'upload'], function () {
+        var $ = layui.jquery;
+        const form = layui.form;
+        const upload = layui.upload;
+
+        //普通图片上传
+        const uploadInst = upload.render({
+            elem: '#telegraph-upload',
+            url: '/client/upload',
+            done: function (res) {
+                //如果上传失败
+                if (!res.success)
+                    return layer.msg(res.msg);
+                //上传成功
+                let path = res.obj.path;
+                $('#upload-view').attr('src', path);
+                $('#telegraph').val(path);
+            },
+            error: function () {
+                //演示失败状态，并实现重传
+                const demoText = $('#demoText');
+                demoText.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-xs demo-reload">重试</a>');
+                demoText.find('.demo-reload').on('click', function () {
+                    uploadInst.upload();
+                });
+            }
+        });
+
+        //监听提交
+        form.on('submit(add)', function (data) {
+            $.ajax({
+                url: '/backstage/lkjApproveSubmit/submit',
+                type: 'post',
+                data: $('#user-add-form').serialize(),
+                dataType: 'json',
+                success: function (result) {
+                    console.log(result);
+                    if (!result.success) {
+                        layer.alert(result.msg);
+                        return false;
+                    }
+
+                    layer.alert("增加成功", {icon: 6}, function () {
+                        parent.location.reload();
+                        //关闭当前frame
+                        parent.layer.close(index);
+                    });
+                }
+            });
+            return false;
+        });
+
+        // 联动选择
+        form.on('select()', function (data) {
+            fragmentLinkage(data.elem);
+        });
+    });
+
+
+    function fragmentLinkage(e) {
+        const id = $(e).attr('id');
+        if (id !== 'railway-line-select')
+            return;
+
+        const railwayLineId = $(e).val();
+        $('#fragment-id').html('<option value="">直接选择或搜索选择</option>');
+
+        layui.form.render("select");//重新渲染 固定写法
+
+        if (!railwayLineId)
+            return;
+
+        $.ajax({
+            url: '/client/railwayLine/getFragments',
+            type: 'post',
+            data: 'railwayLineId=' + railwayLineId,
+            dataType: 'json',
+            success: function (result) {
+                if (!result.success) {
+                    alert(result.msg);
+                    return false;
+                }
+
+                $.each(result.obj, function (i, val) {
+                    $('#fragment-id').append('<option value="' + val.id + '">' + val.name + '</option>')
+                });
+
+                layui.form.render("select");//重新渲染 固定写法
+            }
+        });
+    }
+
+</script>
+</body>
+
+</html>

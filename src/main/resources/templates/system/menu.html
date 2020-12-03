@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-L-admin1.0</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="/js/template/html5shiv.r29.html5.min.js"></script>
+    <script src="/js/template/respond-1.4.2.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+<div class="x-nav">
+      <span class="layui-breadcrumb">
+      </span>
+    <a class="layui-btn layui-btn-primary layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right"
+       href="javascript:location.replace(location.href);" title="刷新">
+        <i class="layui-icon" style="line-height:38px">ဂ</i></a>
+</div>
+<div class="x-body">
+    <div class="layui-row">
+        <xblock>
+            <button class="layui-btn" onclick="x_admin_show('添加菜单','/menu/menuInfo')"><i class="layui-icon"></i>添加</button>
+        </xblock>
+    </div>
+    <xblock>
+        <button type="button" class="layui-btn" onclick="hideKids()"><i class="layui-icon"></i>收起菜单</button>
+    </xblock>
+    <table class="layui-table layui-form">
+        <thead>
+        <tr>
+            <th width="20">
+                <div class="layui-unselect header layui-form-checkbox" lay-skin="primary"><i class="layui-icon">&#xe605;</i></div>
+            </th>
+            <th>菜单名称</th>
+            <th>路径</th>
+            <th width="50">排序</th>
+            <th width="280">操作</th>
+        </thead>
+        <tbody class="x-cate">
+        <div th:each="menu,iterStat : ${menus}">
+            <!-- 一级菜单 -->
+            <tr th:cate-id='${menu.id}' th:fid='${menu.pid}'>
+                <td>
+                    <div class="layui-unselect layui-form-checkbox" lay-skin="primary" th:data-id='${menu.id}'><i class="layui-icon">&#xe605;</i></div>
+                </td>
+                <td>
+                    <i class="layui-icon x-show" status='true'>&#xe623;</i>
+                    <span th:text="${menu.name}">菜单名称</span>
+                </td>
+                <td>
+                    <span th:text="${menu.url}">路径</span>
+                </td>
+                <td><input type="text" th:data-id="${menu.id}" class="layui-input x-sort" name="order" oninput="updateSeq(this)"
+                           th:value="${menu.seq}"></td>
+                <td class="td-manage">
+                    <button th:data-id="${menu.id}" class="layui-btn layui-btn layui-btn-xs"
+                            onclick="x_admin_show('编辑', '/menu/menuInfo?id=' + this.getAttribute('data-id'))">
+                        <i class="layui-icon">&#xe642;</i>
+                        编辑
+                    </button>
+                    <button th:data-id="${menu.id}" class="layui-btn layui-btn-warm layui-btn-xs"
+                            onclick="x_admin_show('添加二级菜单', '/menu/menuInfo?pid=' + this.getAttribute('data-id'))">
+                        <i class="layui-icon">&#xe642;</i>添加二级菜单
+                    </button>
+                    <!--                        <button th:data-id="${menu.id}" class="layui-btn-danger layui-btn layui-btn-xs"  onclick="member_del(this,'要删除的id')" href="javascript:;" ><i class="layui-icon">&#xe640;</i>删除</button>-->
+                </td>
+            </tr>
+
+            <!-- 多个二级菜单 -->
+            <div th:each="secondaryMenu,iterStat : ${menu.children}">
+                <tr th:cate-id='${secondaryMenu.id}' th:fid='${secondaryMenu.pid}'>
+                    <td>
+                        <div class="layui-unselect layui-form-checkbox" lay-skin="primary" th:data-id='${secondaryMenu.id}'>
+                            <i class="layui-icon">&#xe605;</i>
+                        </div>
+                    </td>
+                    <td>
+                        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                        <i class="layui-icon x-show" status='true'>&#xe623;</i>
+                        <span th:text="${secondaryMenu.name}">菜单名称</span>
+                    </td>
+                    <td>
+                        <span th:text="${secondaryMenu.url}">路径</span>
+                    </td>
+                    <td><input type="text" th:data-id="${secondaryMenu.id}" class="layui-input x-sort" name="order" oninput="updateSeq(this)"
+                               th:value="${secondaryMenu.seq}"></td>
+                    <td class="td-manage">
+                        <button th:data-id="${secondaryMenu.id}" class="layui-btn layui-btn layui-btn-xs"
+                                onclick="x_admin_show('编辑', '/menu/menuInfo?id=' + this.getAttribute('data-id'))">
+                            <i class="layui-icon">&#xe642;</i>
+                            编辑
+                        </button>
+                        <button th:data-id="${secondaryMenu.id}" class="layui-btn layui-btn-warm layui-btn-xs"
+                                onclick="x_admin_show('添加三级菜单', '/menu/menuInfo?pid=' + this.getAttribute('data-id'))">
+                            <i class="layui-icon">&#xe642;</i>添加三级菜单
+                        </button>
+                    </td>
+                </tr>
+
+                <div th:each="level3Menu,iterStat : ${secondaryMenu.children}">
+                    <tr th:cate-id='${level3Menu.id}' th:fid='${level3Menu.pid}'>
+                        <td>
+                            <div class="layui-unselect layui-form-checkbox" lay-skin="primary" th:data-id='${level3Menu.id}'>
+                                <i class="layui-icon">&#xe605;</i>
+                            </div>
+                        </td>
+                        <td>
+                            <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                            <span th:text="${level3Menu.name}">菜单名称</span>
+                        </td>
+                        <td>
+                            <span th:text="${level3Menu.url}">路径</span>
+                        </td>
+                        <td><input type="text" th:data-id="${level3Menu.id}" class="layui-input x-sort" name="order" oninput="updateSeq(this)"
+                                   th:value="${level3Menu.seq}"></td>
+                        <td class="td-manage">
+                            <button th:data-id="${level3Menu.id}" class="layui-btn layui-btn layui-btn-xs"
+                                    onclick="x_admin_show('编辑', '/menu/menuInfo?id=' + this.getAttribute('data-id'))">
+                                <i class="layui-icon">&#xe642;</i>
+                                编辑
+                            </button>
+                        </td>
+                    </tr>
+                </div>
+            </div>
+        </div>
+        </tbody>
+    </table>
+</div>
+<script>
+    layui.use(['form'], function () {
+        form = layui.form;
+
+    });
+
+    /*用户-删除*/
+    function member_del(obj, id) {
+        layer.confirm('确认要删除吗？', function (index) {
+            //发异步删除数据
+            $(obj).parents("tr").remove();
+            layer.msg('已删除!', {icon: 1, time: 1000});
+        });
+    }
+
+    function delAll(argument) {
+        const data = tableCheck.getData();
+
+        layer.confirm('确认要删除选中的菜单吗？' + data, function (index) {
+            //捉到所有被选中的，发异步进行删除
+            layer.msg('删除成功', {icon: 1});
+
+            $.ajax({
+                url: '/menu/delete',
+                type: 'get',
+                data: {
+                    ids: data.toString()
+                },
+                dataType: 'json',
+                success: function (result) {
+                    console.log(result);
+                    if (!result.success) {
+                        alert(result.msg);
+                        return false;
+                    }
+
+                    location.reload();
+                }
+            })
+        });
+    }
+
+    function updateSeq(e) {
+        const id = $(e).attr('data-id');
+        const seq = $(e).val();
+
+        $.ajax({
+            url: '/menu/updateSeq',
+            type: 'get',
+            data: {
+                id: id,
+                seq: seq
+            },
+            dataType: 'json',
+            success: function (result) {
+                console.log(result);
+                if (!result.success) {
+                    alert(result.msg);
+                    return false;
+                }
+                location.reload();
+            }
+        })
+    }
+</script>
+</body>
+
+</html>

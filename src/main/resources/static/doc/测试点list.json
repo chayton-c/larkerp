@@ -1,0 +1,35 @@
+[
+  {
+    "id": "828328d8-406a-4ff9-9f21-b6752fad94d7",
+    "name": "绿灯#交流电流",
+    "type_info": "基础电气参数(万用表) 交流电压",
+    "function_code": "0c-71-92-77",
+    "unit": "V",
+    "default_value": "3.5",
+    "lower_limit": "0",
+    "upper_limit": "5",
+    "remark": ""
+  },
+  {
+    "id": "7c08e53d-d941-471a-894b-318780607cbb",
+    "name": "红灯#交流电流",
+    "type_info": "ZPW-2000测试项 载频选频测量-电压 1700 电压",
+    "function_code": "0d-72-93-78",
+    "unit": "V",
+    "default_value": "3.5",
+    "lower_limit": "0",
+    "upper_limit": "5",
+    "remark": ""
+  },
+  {
+    "id": "02e3c9e1-d2d6-4069-951f-241b85bea9c7",
+    "name": "L灯电流(mA)",
+    "type_info": "ZPW-1000测试项 载频选频测量-电压 1600 电压",
+    "function_code": "0d-72-93-78",
+    "unit": "mA",
+    "default_value": "3",
+    "lower_limit": "0",
+    "upper_limit": "20",
+    "remark": ""
+  }
+]

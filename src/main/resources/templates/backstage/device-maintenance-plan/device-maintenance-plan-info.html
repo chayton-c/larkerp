@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-L-admin1.0</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="/css/xadmin.css">
+    <script src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/js/xadmin.js"></script>
+    <script type='text/javascript' src='/js/xm-select/xm-select.js'></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="/js/template/html5shiv.r29.html5.min.js"></script>
+    <script src="/js/template/respond-1.4.2.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+<div class="x-body">
+    <form class="layui-form" id="device-type-info-form">
+        <input type="hidden" id="id" th:value="${deviceMaintenancePlan.id}" name="id"/>
+        <input type="hidden" id="orginalWorkshopId" th:value="${deviceMaintenancePlan.workshopId}"/>
+        <input type="hidden" id="repairClass" th:value="${repairClass}" name="repairClass"/>
+        <input type="hidden" id="orginalExecutionStrategyValue"
+               th:data-strategy="${deviceMaintenancePlan.executionStrategy}" th:data-executionDate="${deviceMaintenancePlan.executionDate}"/>
+        <div class="layui-form-item">
+            <label class="layui-form-label">
+                <span class="x-red">*</span>车间
+            </label>
+            <div class="layui-input-inline">
+                <select name="workshopId" lay-verify="required" lay-search="" id="workshopId">
+                    <option value="">选择或输入车间</option>
+                    <option th:each="workshop, iterStat : ${workshops}" th:value="${workshop.id}" th:text="${workshop.name}"
+                            th:selected="${workshop.id == deviceMaintenancePlan.workshopId}">车间
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label for="device-type-info-name" class="layui-form-label">
+                <span class="x-red">*</span>计划名称
+            </label>
+            <div class="layui-input-inline">
+                <input type="text" id="device-type-info-name" name="name" required lay-verify="required"
+                       autocomplete="off" class="layui-input" th:value="${deviceMaintenancePlan.name}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">
+                <span class="x-red">*</span>策略
+            </label>
+            <div class="layui-input-inline">
+                <select name="executionStrategy" lay-verify="required" lay-search=""
+                        id="executionStrategy" lay-filter="updateExecutionStrategy">
+                    <option value="">选择或输入策略</option>
+                    <option th:each="deviceMaintenancePlanStrategy, iterStat : ${deviceMaintenancePlanStrategyList}"
+                            th:value="${deviceMaintenancePlanStrategy.strategy}"
+                            th:text="${deviceMaintenancePlanStrategy.strategyName}"
+                            th:selected="${deviceMaintenancePlanStrategy.strategy == deviceMaintenancePlan.executionStrategy}">策略
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item" id="executionCycleItem">
+            <label for="device-type-info-name" class="layui-form-label">
+                <span class="x-red">*</span>周期
+            </label>
+            <div class="layui-input-inline">
+                <input type="number" maxlength="10" name="executionCycle" required lay-verify="required"
+                       autocomplete="off" class="layui-input" th:value="${deviceMaintenancePlan.executionCycle}"/>
+            </div>
+        </div>
+
+        <div class="layui-form-item" id="executionYearItem">
+            <label for="device-type-info-name" class="layui-form-label">
+                <span class="x-red">*</span>执行日期
+            </label>
+            <div class="layui-input-inline" style="width: 630px">
+                <div style="display: block" id="executionYear">
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-form-item" id="executionMonthItem">
+            <label for="device-type-info-name" class="layui-form-label">
+                <span class="x-red">*</span>执行日期
+            </label>
+            <div class="layui-input-inline" style="width: 630px">
+                <div style="display: block" id="executionMonth">
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-form-item" id="executionHourItem">
+            <label for="device-type-info-name" class="layui-form-label">
+                <span class="x-red">*</span>执行小时
+            </label>
+            <div class="layui-input-inline">
+                <input type="text" name="executionDateHour"
+                       autocomplete="off" class="layui-input" th:value="${deviceMaintenancePlan.executionDate}"/>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label for="device-type-info-name" class="layui-form-label">
+                <span class="x-red">*</span>工时（天）
+            </label>
+            <div class="layui-input-inline">
+                <input type="number" name="executionDuration" required lay-verify="required"
+                       autocomplete="off" class="layui-input" th:value="${deviceMaintenancePlan.executionDuration}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label for="device-type-info-name" class="layui-form-label">
+                <span class="x-red">*</span>计划开始时间
+            </label>
+            <div class="layui-input-inline">
+                <input class="layui-input" placeholder="开始日" name="executeTime" id="start"
+                       th:value="${#dates.format(deviceMaintenancePlan.executeTime,'yyyy-MM-dd')}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label for="device-type-info-name" class="layui-form-label">
+                <span class="x-red">*</span>执行人
+            </label>
+            <div class="layui-input-inline" style="width: 400px">
+                <input type="text" id="executeUserNames"
+                       disabled
+                       autocomplete="off" class="layui-input" th:value="${executeUserNames}">
+            </div>
+            <input type="hidden" id="executeUserIds"
+                   name="executeUserIds" required lay-verify="required"
+                   autocomplete="off" class="layui-input" th:value="${executeUserIds}">
+            <div class="layui-btn"
+                 onclick="x_admin_show(
+                     '添加页',
+                     '/backstage/deviceMaintenancePlan/userList?workshopId=' + $('#workshopId').val() + '&pageSize=50',
+                     1200, 700)">
+                添加
+            </div>
+            <div class="layui-btn" onclick="clearExecuteUser()">清空</div>
+            <div class="layui-btn" onclick="redoExecuteUser()">恢复</div>
+        </div>
+
+        <div class="layui-form-item">
+            <button class="layui-btn" lay-filter="add" lay-submit="">
+                提交
+            </button>
+        </div>
+    </form>
+</div>
+<script>
+    let previousExecuteUserNames = "";
+    let previousExecuteUserIds = "";
+
+    $(function() {
+        hideExecutionStrategy();
+    });
+
+    layui.use(['form', 'layer', 'laydate'], function () {
+        const $ = layui.jquery;
+        const form = layui.form,
+            layer = layui.layer,
+            laydate = layui.laydate;
+
+        //执行一个laydate实例
+        laydate.render({
+            elem: '#start', //指定元素
+        });
+
+        initExecutionYear(laydate);
+        initExecutionMonth(laydate);
+
+        form.on('select(updateExecutionStrategy)', function (data) {
+            hideExecutionStrategy();
+        });
+
+        //监听提交
+        form.on('submit(add)', function (data) {
+            $.ajax({
+                url: '/backstage/deviceMaintenancePlan/saveOrUpdate',
+                type: 'post',
+                data: $('#device-type-info-form').serialize(),
+                dataType: 'json',
+                success: function (result) {
+                    console.log(result);
+                    if (!result.success) {
+                        layer.msg(result.msg);
+                        return false;
+                    }
+
+                    layer.alert("增加成功", {icon: 6}, function () {
+                        // 获得frame索引
+                        const index = parent.layer.getFrameIndex(window.name);
+                        parent.location.reload();
+                        //关闭当前frame
+                        parent.layer.close(index);
+                    });
+                }
+            });
+            return false;
+        });
+    });
+
+    // 根据策略隐藏不需要的表单
+    function hideExecutionStrategy() {
+        let executionStrategy = $('#executionStrategy').val();
+        switch (Number(executionStrategy)) {
+            case 0:
+                $('#executionCycleItem').show();
+                $('#executionYearItem').hide();
+                $('#executionMonthItem').hide();
+                $('#executionHourItem').hide();
+                break;
+            case 1:
+                console.log(2);
+                $('#executionCycleItem').show();
+                $('#executionYearItem').hide();
+                $('#executionMonthItem').hide();
+                $('#executionHourItem').hide();
+                break;
+            case 2:
+                $('#executionCycleItem').hide();
+                $('#executionYearItem').show();
+                $('#executionMonthItem').hide();
+                $('#executionHourItem').hide();
+                break;
+            case 3:
+                $('#executionCycleItem').hide();
+                $('#executionYearItem').hide();
+                $('#executionMonthItem').show();
+                $('#executionHourItem').hide();
+                break;
+            case 4:
+                $('#executionCycleItem').hide();
+                $('#executionYearItem').hide();
+                $('#executionMonthItem').hide();
+                $('#executionHourItem').show();
+                break;
+        }
+    }
+
+
+    let executionYear;
+    function initExecutionYear(laydate) {
+        executionYear = xmSelect.render({
+            el: '#executionYear',
+            content: '<div id="executionYearDiv" />',
+            height: 'auto',
+            name: 'executionDateYear',
+            autoRow: true,
+            on: function (data) {
+                if (!data.isAdd) {
+                    dateSelect(executionYear.getValue('value'));
+                }
+            }
+        });
+        // 日期多选
+        let fullYear = new Date().getFullYear();
+        laydate.render({
+            elem: '#executionYearDiv',
+            position: 'static',
+            min: fullYear + '-01-01',
+            max: fullYear + '-12-31',
+            showBottom: false,
+            format: 'MM-dd',
+            change: function() {
+                dateSelect(executionYear.getValue('value'));
+            },
+            done: function(value){
+                console.log(value)
+                let values = executionYear.getValue('value');
+                const index = values.findIndex(function (val) {
+                    return val === value
+                });
+
+                if(index !== -1) {
+                    values.splice(index, 1);
+                } else {
+                    values.push(value);
+                }
+
+                values = values.sort();
+                dateSelect(values);
+
+                executionYear.update({
+                    data: values.map(function(val){
+                        return {
+                            name: val,
+                            value: val,
+                            selected: true,
+                        }
+                    })
+                })
+            },
+            ready: removeAll,
+        });
+
+        let orginalExecutionStrategyValueInput = $('#orginalExecutionStrategyValue');
+        let strategy = orginalExecutionStrategyValueInput.attr('data-strategy');
+        let dataExecutionDate = orginalExecutionStrategyValueInput.attr('data-executionDate');
+
+        if (strategy != 2)
+            return;
+
+        executionYear.update({
+            data: dataExecutionDate.split(",").map(function(val) {
+                return {
+                    name: val,
+                    value: val,
+                    selected: true,
+                }
+            })
+        })
+    }
+
+    let executionMonth;
+    function initExecutionMonth(laydate) {
+        executionMonth = xmSelect.render({
+            el: '#executionMonth',
+            content: '<div id="executionMonthDiv" />',
+            height: 'auto',
+            name: 'executionDateMonth',
+            autoRow: true,
+            on: function (data) {
+                if (!data.isAdd) {
+                    dateSelect(executionMonth.getValue('value'));
+                }
+            }
+        });
+        // 日期多选
+        let date = new Date();
+        laydate.render({
+            elem: '#executionMonthDiv',
+            position: 'static',
+            min: date.getFullYear() + '-' + (date.getMonth() + 1) + '-01',
+            max: date.getFullYear() + '-' + (date.getMonth() + 1) + '-31',
+            showBottom: false,
+            format: 'dd',
+            change: function() {
+                dateSelect(executionMonth.getValue('value'));
+            },
+            done: function(value){
+                let values = executionMonth.getValue('value');
+                const index = values.findIndex(function (val) {
+                    return val === value
+                });
+
+                if(index !== -1) {
+                    values.splice(index, 1);
+                } else {
+                    values.push(value);
+                }
+
+                values = values.sort();
+                dateSelect(values);
+
+                executionMonth.update({
+                    data: values.map(function(val){
+                        return {
+                            name: val,
+                            value: val,
+                            selected: true,
+                        }
+                    })
+                })
+            },
+            ready: removeAll,
+        })
+
+        let orginalExecutionStrategyValueInput = $('#orginalExecutionStrategyValue');
+        let strategy = orginalExecutionStrategyValueInput.attr('data-strategy');
+        let dataExecutionDate = orginalExecutionStrategyValueInput.attr('data-executionDate');
+
+        if (strategy != 3)
+            return;
+
+        executionMonth.update({
+            data: dataExecutionDate.split(",").map(function(val) {
+                return {
+                    name: val,
+                    value: val,
+                    selected: true,
+                }
+            })
+        })
+    }
+
+    function removeAll() {
+        document.querySelectorAll('#laydate td[lay-ymd].layui-this').forEach(function(dom){
+            dom.classList.remove('layui-this');
+        });
+    }
+
+    function dateSelect(values) {
+        removeAll();
+        values.forEach(function(val){
+            var dom = document.querySelector('#laydate td[lay-ymd="'+val.replace(/-0([1-9])/g, '-$1')+'"]');
+            dom && dom.classList.add('layui-this');
+        });
+    }
+
+    function clearExecuteUser() {
+        previousExecuteUserNames = $('#executeUserNames').val();
+        previousExecuteUserIds = $('#executeUserIds').val();
+        $('#executeUserNames').val('')
+        $('#executeUserIds').val('')
+        layui.form.render("select");//重新渲染 固定写法
+    }
+
+    function redoExecuteUser() {
+        $('#executeUserNames').val(previousExecuteUserNames);
+        $('#executeUserIds').val(previousExecuteUserIds);
+        layui.form.render("select");//重新渲染 固定写法
+    }
+
+</script>
+</body>
+
+</html>
